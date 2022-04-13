@@ -8,7 +8,7 @@ function conda-stage() {
     local tf_res
     local tf_log
     local exit_code
-    local activate_file
+    local cmd
 
     if [[ -z "${CONDA_STAGE}" ]]; then
         echo >&2 "INTERNAL ERROR: CONDA_STAGE not set"
@@ -44,27 +44,18 @@ function conda-stage() {
         return 2
     fi
 
-    if [[ $action != "stage" ]]; then
+    if [[ $action = "stage" ]] || [[ $action = "unstage" ]]; then
+        cmd=$(cat "$tf_res")
+        rm "${tf_res}"
+        if [[ -z $cmd ]]; then
+            echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Empty result."
+            return 2
+        fi
+        eval "$cmd"
+    else
+        ## For all other actions, echo the captured standard output
         cat "${tf_res}"
         rm "${tf_res}"
         return "$exit_code"
     fi
-    
-    ## Activate local disk
-    mapfile -t activate_file < <(cat "$tf_res")
-    rm "${tf_res}"
-    
-    if [[ "${#activate_file[@]}" -eq 0 ]]; then
-        echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Empty result."
-        return 2
-    elif [[ "${#activate_file[@]}" -gt 1 ]]; then
-        echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Too many results (n=${#activate_file[@]})"
-        return 2
-    elif [[ ! -f "${activate_file[0]}" ]]; then
-        echo >&2 "INTERNAL ERROR: conda-stage 'activate' file does not exist: ${activate_file[0]}"
-        return 2
-    fi
-
-    # shellcheck source=/dev/null
-    source "${activate_file[0]}"
 }

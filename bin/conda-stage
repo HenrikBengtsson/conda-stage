@@ -13,6 +13,8 @@
 ###  --force             Force an action, e.g. repacking environment
 ###  --full              Output more information
 ###  --source            Generate conda-stage() shell function
+###  --readonly          Make the staged environment readonly
+###  --unstage           Unstage and remove staged environment
 ###  --path=<path>       Directory where conda environment should be
 ###                      staged (Default: `mktemp -d`)
 ### ---
@@ -114,7 +116,7 @@ verbose=true
 args=()
 full=false
 path=${CONDA_STAGE_PATH}
-readonly=true
+readonly=false
 
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
@@ -136,6 +138,10 @@ while [[ $# -gt 0 ]]; do
         full=true
     elif [[ "$1" == "--source" ]]; then
         action=source
+    elif [[ "$1" == "--readonly" ]]; then
+        readonly=true
+    elif [[ "$1" == "--unstage" ]]; then
+        action=unstage
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -204,6 +210,32 @@ if [[ "${action}" == "source" ]]; then
     exit 0
 fi
 
+if [[ "${action}" == "unstage" ]]; then
+    minfo "Unstaging and reverting to original conda environment  ..."
+    ## Assert that we are working with a staged environment
+    if [[ -z ${CONDA_PREFIX} ]]; then
+        merror "Does not look like a staged environment: CONDA_PREFIX is not set"
+    fi
+    assert_dir_exists "${CONDA_PREFIX}"
+
+    if [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+        merror "Does not look like a staged environment: No '${CONDA_PREFIX}/.conda-stage' file found"
+    fi
+
+    mdebug "- Staged conda environment: ${CONDA_PREFIX}"
+
+    original=$(cat "${CONDA_PREFIX}/.conda-stage")
+    minfo "Original conda environment: ${original}"
+
+    minfo "Removing all staged files: ${CONDA_PREFIX}"
+    rm -rf "${CONDA_PREFIX}"
+
+    minfo "To-activate original conda environment:"
+    echo "conda activate \"${original}\""
+    
+    exit 0
+fi
+
 if [[ "${action}" == "stage" ]]; then
     minfo "Staging current conda environment to local disk ..."
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
@@ -263,6 +295,9 @@ if [[ "${action}" == "stage" ]]; then
     tar -xf "${conda_pack_cache_file}" -C "${path}"
     chmod -R u+w "${path}"
 
+    ## Record original conda environment
+    echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
+    
     mdebug "- Unpacking"
     # shellcheck source=/dev/null
     source "${path}/bin/activate"
@@ -273,7 +308,6 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    minfo "To-activate instruction: source \"${path}/bin/activate\""
-
-    echo "${path}/bin/activate"
+    minfo "To-activate staged environment:"
+    echo "conda activate \"${path}\""
 fi
