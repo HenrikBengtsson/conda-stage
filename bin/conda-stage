@@ -197,8 +197,13 @@ if [[ "${action}" == "stage" ]]; then
     fi
     mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
 
+    ## Assert that environment is not already staged
     if command -v conda-unpack; then
-        error "Conda environment is already staged and active: ${CONDA_PREFIX}"
+        ## FIXME: How can one detect if conda-pack is already done?
+        ## https://github.com/HenrikBengtsson/conda-stage/issues/2
+        if false; then
+            error "Conda environment is already staged and active: ${CONDA_PREFIX}"
+        fi
     fi
     
     mdebug "- Using conda-stage $(version)"
