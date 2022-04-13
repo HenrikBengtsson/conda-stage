@@ -1,28 +1,59 @@
 # conda-stage: Stage Conda Environment on Local Disk
 
-## Example
+The `conda-stage` tool will take an active conda environment and stage it to local disk. Working with a conda environment on local disk can greatly improve the performance as local disk is often much faster than a global, network-based file system, including multi-tenant parallel file systems such as BeeGFS and Lustre often found in high-performance compute (HPC) environments.
+
+
+## Setup
+
+Call the following _once_ per shell session:
 
 ```sh
 $ eval $(conda-stage --source)
+```
+
+This will create shell _function_ `conda-stage()`.
+
+
+## Example
+
+To stage conda environment 'myenv' to local disk and activate there, do:
+
+```sh
 $ conda activate myenv
 $ conda-stage
 $ which python
 /tmp/alice/conda-stage_VlQrpSj0BT/bin/python
-$ ...
-$ conda deactivate
 ```
+
+To unstage, that is, reactivate the original environment 'myenv' and remove all staged files, do:
+
+```sh
+$ conda-stage --unstage
+```
+
+For further help, call:
+
+```sh
+$ conda-stage --help
+```
+
 
 ## Requirements
 
 * **Bash**
 * [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda or Anaconda
-* [**conda-pack**](https://conda.github.io/conda-pack/)
+
+All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/) a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before its staged to local disk.
 
 
-## Installing conda-pack in conda environment
+## Installation
 
 ```sh
-$ conda activate myenv
-$ conda install -c conda-forge conda-pack
-$ conda-pack --version
+$ cd /path/to/software
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.0.0-9002.tar.gz
+$ tar xf 0.0.0-9002.tar.gz
+$ PATH=/path/to/conda-stage-0.0.0-9002/bin:$PATH
+$ export PATH
+$ conda-stage --version
+0.0.0-9002
 ```
