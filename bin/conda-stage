@@ -23,10 +23,15 @@
 ###  conda-stage --version --full
 ###
 ###  conda activate myenv
-###  conda-stage
+###  stage_path=$(mktemp -d)
+###  conda-stage --path="${stage_path}"
+###  source "${stage_path}/bin/activate"
 ###
-###  conda activate myenv
 ###  conda-stage --force      ## repack environment
+###
+###  TODO: The below currently doesn't work because of #1
+###  conda activate myenv
+###  conda-stage
 ###
 ### Version: 0.0.0-9000
 ### Copyright: Henrik Bengtsson (2022)
@@ -138,8 +143,8 @@ while [[ $# -gt 0 ]]; do
         if [[ -z ${value} ]]; then
             merror "Option '--${key}' must not be empty"
         fi
-        if [[ "${key}" == "HIDDENHIDDENHIDDEN" ]]; then
-            port=${value}
+        if [[ "${key}" == "path" ]]; then
+            path=${value}
         else
             merror "Unknown option: $1"
         fi
@@ -191,6 +196,8 @@ if [[ "${action}" == "stage" ]]; then
         error "No active conda environment, e.g. 'conda activate <name>'"
     fi
     mdebug "- Current Conda environment: ${CONDA_DEFAULT_ENV}"
+
+    ## TODO: Assert that environment is not already staged by conda-stage
     
     mdebug "- Using conda-stage $(version)"
     
