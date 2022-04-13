@@ -29,13 +29,13 @@
 ###  conda activate myenv
 ###  conda-stage
 ###
-###  ## Any shell
+###  ## Other shells
 ###  conda activate myenv
 ###  stage_path=$(mktemp -d)
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.0.0-9002
+### Version: 0.1.0
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
