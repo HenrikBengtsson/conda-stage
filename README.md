@@ -10,7 +10,7 @@ $ conda-stage
 ## Requirements
 
 * **Bash**
-* **conda**, e.g. Miniconda or Anaconda
+* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda or Anaconda
 * [**conda-pack**](https://conda.github.io/conda-pack/)
 
 
