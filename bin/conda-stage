@@ -195,9 +195,11 @@ if [[ "${action}" == "stage" ]]; then
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
         error "No active conda environment, e.g. 'conda activate <name>'"
     fi
-    mdebug "- Current Conda environment: ${CONDA_DEFAULT_ENV}"
+    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
 
-    ## TODO: Assert that environment is not already staged by conda-stage
+    if command -v conda-unpack; then
+        error "Conda environment is already staged and active: ${CONDA_PREFIX}"
+    fi
     
     mdebug "- Using conda-stage $(version)"
     
