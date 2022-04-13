@@ -53,10 +53,10 @@ All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.1.0.tar.gz
-$ tar xf 0.1.0.tar.gz
-$ PATH=/path/to/conda-stage-0.1.0/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.1.1.tar.gz
+$ tar xf 0.1.1.tar.gz
+$ PATH=/path/to/conda-stage-0.1.1/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.1.0
+0.1.1
 ```
