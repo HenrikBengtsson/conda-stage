@@ -10,9 +10,9 @@
 ###  --debug             Output detailed debug information
 ###  --verbose           Output informative message
 ###  --quiet             Silence all output
-###  --force             Force an action
+###  --force             Force an action, e.g. repacking environment
 ###  --full              Output more information
-###
+###  --source            Generate conda-stage() shell function
 ###  --path=<path>       Directory where conda environment should be
 ###                      staged (Default: `mktemp -d`)
 ### ---
@@ -22,18 +22,18 @@
 ###  conda-stage --version
 ###  conda-stage --version --full
 ###
+###  ## Bash only
+###  eval "$(conda-stage --source)"
+###  conda activate myenv
+###  conda-stage
+###
+###  ## Any shell
 ###  conda activate myenv
 ###  stage_path=$(mktemp -d)
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-###  conda-stage --force      ## repack environment
-###
-###  TODO: The below currently doesn't work because of #1
-###  conda activate myenv
-###  conda-stage
-###
-### Version: 0.0.0-9000
+### Version: 0.0.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -134,6 +134,8 @@ while [[ $# -gt 0 ]]; do
         force=true
     elif [[ "$1" == "--full" ]]; then
         full=true
+    elif [[ "$1" == "--source" ]]; then
+        action=source
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -189,6 +191,13 @@ mdebug "dryrun: ${dryrun}"
 mdebug "force: ${force}"
 mdebug "args: [n=${#args[@]}] ${args[*]}"
 
+
+if [[ "${action}" == "source" ]]; then
+    file="$(dirname "${this}")/conda-stage.sh"
+    assert_file_exists "$file"
+    cat "${file}"
+    exit 0
+fi
 
 if [[ "${action}" == "stage" ]]; then
     minfo "Staging current conda environment to local disk ..."

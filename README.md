@@ -3,8 +3,11 @@
 ## Example
 
 ```sh
+$ eval $(conda-stage --source)
 $ conda activate myenv
 $ conda-stage
+$ which python
+/tmp/alice/conda-stage_VlQrpSj0BT/bin/python
 $ ...
 $ conda deactivate
 ```
