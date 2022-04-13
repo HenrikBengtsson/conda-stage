@@ -1,0 +1,251 @@
+#! /usr/bin/env bash
+### conda-stage: Stage Conda Environment on Local Disk
+### 
+### Usage:
+###  conda-stage [options]
+### 
+### Options:  
+###  --help              Display the full help page with examples
+###  --version           Output version of this software
+###  --debug             Output detailed debug information
+###  --verbose           Output informative message
+###  --quiet             Silence all output
+###  --force             Force an action
+###  --full              Output more information
+###
+###  --path=<path>       Directory where conda environment should be
+###                      staged (Default: `mktemp -d`)
+### ---
+###
+### Example:
+###  conda-stage --help
+###  conda-stage --version
+###  conda-stage --version --full
+###
+###  conda activate myenv
+###  conda-stage
+###
+### Version: 0.0.0-9000
+### Copyright: Henrik Bengtsson (2022)
+### License: ISC
+
+this="${BASH_SOURCE%/}"
+[[ -L "${this}" ]] && this=$(readlink "${this}")
+
+## Import bash utility functions
+incl="$(dirname "${this}")/incl"
+
+# shellcheck source=incl/asserts.sh
+source "${incl}/asserts.sh"
+# shellcheck source=incl/cli.sh
+source "${incl}/cli.sh"
+# shellcheck source=incl/conditions.sh
+source "${incl}/conditions.sh"
+# shellcheck source=incl/files.sh
+source "${incl}/files.sh"
+# shellcheck source=incl/output.sh
+source "${incl}/output.sh"
+# shellcheck source=incl/ports.sh
+source "${incl}/ports.sh"
+# shellcheck source=incl/system.sh
+source "${incl}/system.sh"
+
+
+# =========================================================================
+# Utility functions
+# =========================================================================
+
+# -------------------------------------------------------------------------
+# Conda
+# -------------------------------------------------------------------------
+function assert_conda {
+    if ! command -v conda &> /dev/null; then
+        error "Executable 'conda' not found"
+    fi
+}
+
+function conda_version {
+    local res
+    res=$(conda --version 2> /dev/null)
+    # shellcheck disable=SC2181
+    [[ $? -eq 0 ]] || return 1
+    sed -E 's/^conda[[:space:]]+//' <<< "${res}"
+}    
+
+function conda_pack_version {
+    local res
+    res=$(conda-pack --version 2> /dev/null)
+    # shellcheck disable=SC2181
+    [[ $? -eq 0 ]] || return 1
+    sed -E 's/^conda-pack[[:space:]]+//' <<< "${res}"
+}    
+
+# -------------------------------------------------------------------------
+# Configuration utilities
+# -------------------------------------------------------------------------
+function config_root {
+    local path
+    path=${XDG_CONFIG_HOME:-$HOME/.config}
+    echo "${path}"
+}
+
+function make_config_root {
+    local path
+    path=$(config_root)
+    mkdir -p "${path}"
+}
+
+
+# =========================================================================
+# MAIN
+# -------------------------------------------------------------------------
+action=stage
+dryrun=false
+force=false
+verbose=false
+quiet=false
+args=()
+full=false
+path=${CONDA_STAGE_PATH}
+readonly=true
+
+# Parse command-line options
+while [[ $# -gt 0 ]]; do
+    mdebug "Next CLI argument: $1"
+    ## Options (--flags):
+    if [[ "$1" == "--help" ]]; then
+        action=help
+    elif [[ "$1" == "--version" ]]; then
+        action=version
+    elif [[ "$1" == "--debug" ]]; then
+        debug=true
+    elif [[ "$1" == "--dryrun" ]]; then
+        dryrun=true
+    elif [[ "$1" == "--verbose" ]]; then
+        verbose=true
+    elif [[ "$1" == "--quiet" ]]; then
+        quiet=true
+    elif [[ "$1" == "--force" ]]; then
+        force=true
+    elif [[ "$1" == "--full" ]]; then
+        full=true
+    ## Options (--key=value):
+    elif [[ "$1" =~ ^--.*=.*$ ]]; then
+        key=${1//--}
+        key=${key//=*}
+        value=${1//--[[:alpha:]]*=}
+        mdebug "Key-value option '$1' parsed to key='${key}', value='${value}'"
+        if [[ -z ${value} ]]; then
+            merror "Option '--${key}' must not be empty"
+        fi
+        if [[ "${key}" == "HIDDENHIDDENHIDDEN" ]]; then
+            port=${value}
+        else
+            merror "Unknown option: $1"
+        fi
+    else
+        ## Additional options to be appended (rarely needed)
+        args+=("$1")
+    fi
+    shift
+done
+
+
+## --help should always be available prior to any validation errors
+if [[ -z $action ]]; then
+    help
+    _exit 0
+elif [[ $action == "help" ]]; then
+    help full
+    _exit 0
+elif [[ $action == "version" ]]; then
+    if $full; then
+        echo "conda-stage: $(version)"
+        echo "conda: $(conda_version || echo "<please install Miniconda or Anaconda>")"
+    else
+        version
+    fi
+    _exit 0
+fi
+
+
+# -------------------------------------------------------------------------
+# Validate options
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# Initiate
+# -------------------------------------------------------------------------
+mdebug "action: ${action}"
+mdebug "debug: ${debug}"
+mdebug "verbose: ${verbose}"
+mdebug "dryrun: ${dryrun}"
+mdebug "force: ${force}"
+mdebug "args: [n=${#args[@]}] ${args[*]}"
+
+
+if [[ "${action}" == "stage" ]]; then
+    minfo "Staging current conda environment to local disk ..."
+    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+        error "No active conda environment, e.g. 'conda activate <name>'"
+    fi
+    mdebug "- Current Conda environment: ${CONDA_DEFAULT_ENV}"
+    
+    mdebug "- Using conda-stage $(version)"
+    
+    assert_conda
+    mdebug "- Using conda $(conda_version)"
+
+    ## Install conda-pack?
+    if ! command -v conda &> /dev/null; then
+        minfo "Installing conda-pack ..."
+        conda install --yes --channel=conda-forge conda-pack
+    fi
+    mdebug "- Using conda-pack $(conda_pack_version)"
+
+    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
+    assert_dir_exists "${CONDA_PREFIX}"
+    conda_pack_cache_path=$(dirname "${CONDA_PREFIX}")
+    mdebug "- Stage cache path: ${conda_pack_cache_path}"
+    assert_dir_exists "${conda_pack_cache_path}"
+
+    conda_pack_cache_file=${conda_pack_cache_path}/${CONDA_DEFAULT_ENV}.tar.gz
+
+    ## Skip existing conda-pack file?
+    if $force && [[ -f "${conda_pack_cache_file}" ]]; then
+        mdebug "Removing existing conda-pack file: ${conda_pack_cache_file}"
+        rm -f "${conda_pack_cache_file}"
+    fi
+
+    ## Create conda-pack file?
+    if [[ ! -f "${conda_pack_cache_file}" ]]; then
+        minfo "Packaging conda environment ..."
+        conda-pack --output="${conda_pack_cache_file}"
+    fi
+    mdebug "- Using packaged conda environment: ${conda_pack_cache_file}"
+
+    if [[ -z $path ]]; then
+        path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage_XXXXXXXXXX)
+    fi
+    mdebug "- Stage path: ${path}"
+    assert_dir_exists "${path}"
+
+    minfo "Extracting"
+    tar -xf "${conda_pack_cache_file}" -C "${path}"
+    chmod -R u+w "${path}"
+
+    mdebug "- Unpacking"
+    # shellcheck source=/dev/null
+    source "${path}/bin/activate"
+    conda-unpack
+
+    if $readonly; then
+        mdebug "- Make read-only"
+        chmod -R ugo-w "${path}"
+    fi
+
+    minfo "To-activate instruction: source \"${path}/bin/activate\""
+
+    echo "${path}/bin/activate"
+fi
