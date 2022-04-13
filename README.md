@@ -3,7 +3,7 @@
 
 # conda-stage: Stage Conda Environment on Local Disk
 
-The `conda-stage` tool will take an active conda environment and stage it to local disk. Working with a conda environment on local disk can greatly improve the performance as local disk is often much faster than a global, network-based file system, including multi-tenant parallel file systems such as BeeGFS and Lustre often found in high-performance compute (HPC) environments.
+The `conda-stage` tool takes the active conda environment and stage it to local disk. Working with a conda environment on local disk can greatly improve the performance as local disk is often much faster than a global, network-based file system, including multi-tenant parallel file systems such as BeeGFS and Lustre often found in high-performance compute (HPC) environments.
 
 
 ## Setup
