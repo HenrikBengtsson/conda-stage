@@ -1,10 +1,12 @@
 # conda-stage
 
-## Version 0.1.0-9001 [2022-04-13]
+## Version 0.1.0-9002 [2022-04-13]
 
 Bug Fixes:
 
 * Failed to install **conda-pack** automatically.
+
+* `conda-stage()` would choke on progress output by `conda-pack`.
 
 
 ## Version 0.1.0 [2022-04-13]

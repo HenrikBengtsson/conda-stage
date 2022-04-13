@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.1.0-9001
+### Version: 0.1.0-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -277,7 +277,7 @@ if [[ "${action}" == "stage" ]]; then
     ## Create conda-pack file?
     if [[ ! -f "${conda_pack_cache_file}" ]]; then
         minfo "Packaging conda environment ..."
-        conda-pack --output="${conda_pack_cache_file}"
+        conda-pack --quiet --output="${conda_pack_cache_file}"
     fi
     mdebug "- Packaged conda environment: ${conda_pack_cache_file}"
 
