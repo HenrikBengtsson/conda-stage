@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.1.0-9000
+### Version: 0.1.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -254,7 +254,7 @@ if [[ "${action}" == "stage" ]]; then
     mdebug "- Using conda $(conda_version)"
 
     ## Install conda-pack?
-    if ! command -v conda &> /dev/null; then
+    if ! command -v conda-pack &> /dev/null; then
         minfo "Installing conda-pack ..."
         conda install --yes --channel=conda-forge conda-pack
     fi
