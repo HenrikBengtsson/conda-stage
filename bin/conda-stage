@@ -65,9 +65,6 @@ source "${incl}/system.sh"
 # Utility functions
 # =========================================================================
 
-# -------------------------------------------------------------------------
-# Conda
-# -------------------------------------------------------------------------
 function assert_conda {
     if ! command -v conda &> /dev/null; then
         merror "Executable 'conda' not found"
@@ -90,25 +87,14 @@ function conda_pack_version {
     sed -E 's/^conda-pack[[:space:]]+//' <<< "${res}"
 }    
 
-# -------------------------------------------------------------------------
-# Configuration utilities
-# -------------------------------------------------------------------------
-function config_root {
-    local path
-    path=${XDG_CONFIG_HOME:-$HOME/.config}
-    echo "${path}"
+function file_info {
+    assert_file_exists "${1:?}"
+    stat -t --printf "%n (%s bytes; %y)" "$1"
 }
-
-function make_config_root {
-    local path
-    path=$(config_root)
-    mkdir -p "${path}"
-}
-
 
 # =========================================================================
 # MAIN
-# -------------------------------------------------------------------------
+# =========================================================================
 action=stage
 dryrun=false
 force=false
@@ -230,14 +216,16 @@ if [[ "${action}" == "unstage" ]]; then
     minfo "Removing all staged files: ${CONDA_PREFIX}"
     rm -rf "${CONDA_PREFIX}"
 
-    minfo "To-activate original conda environment:"
-    echo "conda activate \"${original}\""
-    
+    cmd="conda activate \"${original}\""
+    mdebug "Command to activate original conda environment: $cmd"
+    echo "$cmd"
+
+    minfo "Activating original conda environment: ${original}"
     exit 0
 fi
 
 if [[ "${action}" == "stage" ]]; then
-    minfo "Staging current conda environment to local disk ..."
+    minfo "Staging current conda (${CONDA_PREFIX}) environment to local disk ..."
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
         merror "No active conda environment, e.g. 'conda activate <name>'"
     fi
@@ -279,7 +267,7 @@ if [[ "${action}" == "stage" ]]; then
         minfo "Packaging conda environment ..."
         conda-pack --quiet --output="${conda_pack_cache_file}"
     fi
-    mdebug "- Packaged conda environment: ${conda_pack_cache_file}"
+    mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
 
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage_XXXXXXXXXX)
@@ -287,7 +275,7 @@ if [[ "${action}" == "stage" ]]; then
     mdebug "- Stage path: ${path}"
     assert_dir_exists "${path}"
 
-    minfo "Extracting ${conda_pack_cache_file} to ${path}"
+    minfo "Extracting ${conda_pack_cache_file} $(file_info "${conda_pack_cache_file}") to ${path}"
     tar -xf "${conda_pack_cache_file}" -C "${path}"
     chmod -R u+w "${path}"
 
@@ -304,6 +292,10 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    minfo "To-activate staged environment:"
-    echo "conda activate \"${path}\""
+    cmd="conda activate \"${path}\""
+    mdebug "Command to activate staged conda environment: $cmd"
+    echo "$cmd"
+    
+    minfo "Activating staged conda environment: ${path}"
+    exit 0
 fi
