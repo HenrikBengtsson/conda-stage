@@ -25,6 +25,9 @@
 ###  conda activate myenv
 ###  conda-stage
 ###
+###  conda activate myenv
+###  conda-stage --force      ## repack environment
+###
 ### Version: 0.0.0-9000
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
@@ -102,8 +105,7 @@ function make_config_root {
 action=stage
 dryrun=false
 force=false
-verbose=false
-quiet=false
+verbose=true
 args=()
 full=false
 path=${CONDA_STAGE_PATH}
@@ -121,10 +123,8 @@ while [[ $# -gt 0 ]]; do
         debug=true
     elif [[ "$1" == "--dryrun" ]]; then
         dryrun=true
-    elif [[ "$1" == "--verbose" ]]; then
-        verbose=true
     elif [[ "$1" == "--quiet" ]]; then
-        quiet=true
+        verbose=false
     elif [[ "$1" == "--force" ]]; then
         force=true
     elif [[ "$1" == "--full" ]]; then
@@ -223,7 +223,7 @@ if [[ "${action}" == "stage" ]]; then
         minfo "Packaging conda environment ..."
         conda-pack --output="${conda_pack_cache_file}"
     fi
-    mdebug "- Using packaged conda environment: ${conda_pack_cache_file}"
+    mdebug "- Packaged conda environment: ${conda_pack_cache_file}"
 
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage_XXXXXXXXXX)
@@ -231,7 +231,7 @@ if [[ "${action}" == "stage" ]]; then
     mdebug "- Stage path: ${path}"
     assert_dir_exists "${path}"
 
-    minfo "Extracting"
+    minfo "Extracting ${conda_pack_cache_file} to ${path}"
     tar -xf "${conda_pack_cache_file}" -C "${path}"
     chmod -R u+w "${path}"
 
