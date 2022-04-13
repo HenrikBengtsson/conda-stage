@@ -5,6 +5,8 @@
 ```sh
 $ conda activate myenv
 $ conda-stage
+$ ...
+$ conda deactivate
 ```
 
 ## Requirements
