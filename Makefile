@@ -7,4 +7,4 @@ shellcheck:
 	shellcheck -x conda-stage
 
 spelling:
-	Rscript -e "spelling::spell_check_files(c('README.md'), ignore=readLines('WORDLIST'))"
+	Rscript -e "spelling::spell_check_files(c('README.md', 'NEWS.md'), ignore=readLines('WORDLIST'))"
