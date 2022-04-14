@@ -1,8 +1,12 @@
 # conda-stage
 
-## Version 0.2.0-9007 [2022-04-14]
+## Version 0.2.0-9008 [2022-04-14]
 
 New Features:
+
+* Add `conda-stage --pack` to run `conda-pack` on an active conda
+  environment and return.  Together with `--force`, this can be used
+  to re-package an already packages environment.
 
 * Report on progress when running `conda-pack`.  This can be disabled
   with option `--quiet`.

@@ -14,6 +14,7 @@
 ###  --full              Output more information
 ###  --source            Generate conda-stage() shell function
 ###  --readonly          Make the staged environment readonly
+###  --pack              Package up a conda environment
 ###  --unstage           Unstage and remove staged environment
 ###  --path=<path>       Directory where conda environment should be
 ###                      staged (Default: `mktemp -d`)
@@ -35,7 +36,9 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9007
+###  conda-stage --pack --force
+###
+### Version: 0.2.0-9008
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -206,6 +209,8 @@ while [[ $# -gt 0 ]]; do
         readonly=true
     elif [[ "$1" == "--unstage" ]]; then
         action=unstage
+    elif [[ "$1" == "--pack" ]]; then
+        action=pack
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -271,6 +276,16 @@ if [[ "${action}" == "source" ]]; then
     file="$(dirname "${this}")/conda-stage.sh"
     assert_file_exists "$file"
     cat "${file}"
+    exit 0
+fi
+
+if [[ "${action}" == "pack" ]]; then
+    minfo "Package current conda environment (${CONDA_PREFIX}) to cache ..."
+    mdebug "- Using conda-stage $(version)"
+
+    conda_env_name=${CONDA_DEFAULT_ENV}    
+    conda_pack_cache_file=$(conda_pack)
+    minfo "Created conda-pack tarball: ${conda_pack_cache_file}"
     exit 0
 fi
 
