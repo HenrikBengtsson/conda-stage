@@ -25,20 +25,19 @@ To stage conda environment 'myenv' to local disk and activate there, do:
 $ conda activate myenv
 (myenv) $ which python
 /home/alice/.conda/envs/myenv/bin/python
-(myenv) $ conda-stage
+(myenv) $ conda-stage --quiet
 (myenv*) $ which python
-/tmp/alice/conda-stage_VlQrpSj0BT/bin/python
+/tmp/alice/conda-stage-VlQr/myenv/bin/python
 ```
 
 To unstage, that is, reactivate the original environment 'myenv' and remove all staged files, do:
 
 ```sh
-(myenv*) $ conda-stage --unstage
-(myenv) $ conda-stage
+(myenv*) $ conda-stage --unstage --quiet
 (myenv) $ which python
 /home/alice/.conda/envs/myenv/bin/python
 (myenv) $ conda deactivate
-$
+$ 
 ```
 
 For further help, call:
@@ -53,17 +52,17 @@ $ conda-stage --help
 * **Bash**
 * [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda or Anaconda
 
-All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/) a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before its staged to local disk.
+All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/), which is a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before that is staged to local disk.
 
 
 ## Installation
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.2.0.tar.gz
-$ tar xf 0.2.0.tar.gz
-$ PATH=/path/to/conda-stage-0.2.0/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.3.0.tar.gz
+$ tar xf 0.3.0.tar.gz
+$ PATH=/path/to/conda-stage-0.3.0/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.2.0
+0.3.0
 ```

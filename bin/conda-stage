@@ -14,6 +14,7 @@
 ###  --full              Output more information
 ###  --source            Generate conda-stage() shell function
 ###  --readonly          Make the staged environment readonly
+###  --pack              Package up a conda environment
 ###  --unstage           Unstage and remove staged environment
 ###  --path=<path>       Directory where conda environment should be
 ###                      staged (Default: `mktemp -d`)
@@ -35,7 +36,9 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0
+###  conda-stage --pack --force
+###
+### Version: 0.3.0
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -87,6 +90,108 @@ function conda_pack_version {
     sed -E 's/^conda-pack[[:space:]]+//' <<< "${res}"
 }    
 
+
+function conda_pack_cache_file {
+    local path
+    
+    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
+    assert_dir_exists "${CONDA_PREFIX}"
+    path=$(dirname "${CONDA_PREFIX}")
+    mdebug "- Stage cache path: ${path}"
+    assert_dir_exists "${path}"
+
+    echo "${path}/${CONDA_DEFAULT_ENV}.tar.gz"
+}
+
+function conda_pack {
+    local opts
+    local file
+    local tmp_tarball
+    local t0
+    local dt
+    
+    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+        merror "No active conda environment, e.g. 'conda activate <name>'"
+    fi
+    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
+
+    ## Assert that environment is not already staged
+    if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+         merror "Conda environment is already staged and active: ${CONDA_PREFIX}"
+    fi
+    
+    assert_conda
+    mdebug "- Using conda $(conda_version)"
+
+    ## Install conda-pack?
+    if ! command -v conda-pack &> /dev/null; then
+        t0=$SECONDS
+        minfo "Installing conda-pack ..."
+        opts=("--yes")
+        if ! $verbose; then
+            opts+=("--quiet")
+        fi
+        mdebug "Additional 'conda install' options: ${opts[*]}"
+        ## WORKAROUND: 'conda install' outputs some "progress" to stdout, not
+        ## stderr (https://github.com/HenrikBengtsson/conda-stage/issues/15)
+        ## Because of this, we direct stdout to stderr here.
+        ## WORKAROUND 2: conda install --quiet does _not_ silence its stdout
+        ## output, which means we have to redirect everything to /dev/null
+        ## if verbose=false.
+        if $verbose; then
+            1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
+        else
+            conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
+        fi
+        dt=$((SECONDS - t0))
+        minfo "Total installation time: ${dt} seconds"
+
+        ## Assert installation was successful
+        if ! command -v conda-pack &> /dev/null; then
+            merror "Failed to install 'conda-pack'"
+        fi
+    fi
+    mdebug "- Using conda-pack $(conda_pack_version)"
+
+    file=$(conda_pack_cache_file)
+
+    ## Skip existing conda-pack file?
+    if $force && [[ -f "${file}" ]]; then
+        mdebug "Removing existing conda-pack file: ${file}"
+        rm -f "${file}"
+    fi
+
+    ## Create conda-pack file?
+    if [[ ! -f "${file}" ]]; then
+        t0=$SECONDS
+        minfo "Packaging conda environment ..."
+        opts=()
+        if ! $verbose; then
+            opts+=("--quiet")
+        fi
+        mdebug "Additional 'conda-pack' options: ${opts[*]}"
+        ## ROBUSTNESS: Have 'conda-pack' produce the tarball atomically by
+        ## writing to a temporary file which is renamed on success.  Since
+        ## 'conda-pack' looks at the filename extension, we can just append
+        ## '.tmp' at the end, because that'll be an error. Instead, we
+        ## prepend '.tmp.' to the basename.
+        tmp_tarball=$(dirname "${file}")/.tmp.$(basename "${file}")
+        
+        ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
+        ## (https://github.com/conda/conda-pack/issues/217). Because of this,
+        ## we direct stdout to stderr here.
+        1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
+        mv "${tmp_tarball}" "${file}"
+
+        dt=$((SECONDS - t0))
+        minfo "Total 'conda-pack' time: ${dt} seconds"
+    fi
+    mdebug "- Packaged conda environment: $(file_info "${file}")"
+    assert_file_exists "${file}"
+    
+    echo "${file}"
+}
+
 function file_info {
     assert_file_exists "${1:?}"
     stat -t --printf "%n (%s bytes; %y)" "$1"
@@ -128,6 +233,8 @@ while [[ $# -gt 0 ]]; do
         readonly=true
     elif [[ "$1" == "--unstage" ]]; then
         action=unstage
+    elif [[ "$1" == "--pack" ]]; then
+        action=pack
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -196,6 +303,26 @@ if [[ "${action}" == "source" ]]; then
     exit 0
 fi
 
+if [[ "${action}" == "pack" ]]; then
+    minfo "Package current conda environment (${CONDA_PREFIX}) to cache ..."
+    mdebug "- Using conda-stage $(version)"
+
+    ## Already done?
+    file=$(conda_pack_cache_file)
+    if ! $force && [[ -f "${file}" ]]; then
+        merror "Package tarball already exists. Use --force to recreate: ${file}"
+    fi
+
+    conda_pack_cache_file=$(conda_pack)
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        exit "$exit_code"
+    fi
+    
+    minfo "Created conda-pack tarball: ${conda_pack_cache_file}"
+    exit 0
+fi
+
 if [[ "${action}" == "unstage" ]]; then
     minfo "Unstaging and reverting to original conda environment  ..."
     ## Assert that we are working with a staged environment
@@ -213,6 +340,7 @@ if [[ "${action}" == "unstage" ]]; then
     original=$(cat "${CONDA_PREFIX}/.conda-stage")
     minfo "Original conda environment: ${original}"
 
+    t0=$SECONDS
     minfo "Removing all staged files: ${CONDA_PREFIX}"
     rm -rf "${CONDA_PREFIX}"
 
@@ -221,74 +349,57 @@ if [[ "${action}" == "unstage" ]]; then
     echo "$cmd"
 
     minfo "Activating original conda environment: ${original}"
+
+    dt=$((SECONDS - t0))
+    minfo "Total unstage time: ${dt} seconds"
+    
     exit 0
 fi
 
 if [[ "${action}" == "stage" ]]; then
-    minfo "Staging current conda (${CONDA_PREFIX}) environment to local disk ..."
-    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
-        merror "No active conda environment, e.g. 'conda activate <name>'"
-    fi
-    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
-    conda_env_name=${CONDA_DEFAULT_ENV}    
-
-    ## Assert that environment is not already staged
-    if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
-         merror "Conda environment is already staged and active: ${CONDA_PREFIX}"
-    fi
-    
+    minfo "Staging current conda environment (${CONDA_PREFIX}) to local disk ..."
     mdebug "- Using conda-stage $(version)"
-    
-    assert_conda
-    mdebug "- Using conda $(conda_version)"
 
-    ## Install conda-pack?
-    if ! command -v conda-pack &> /dev/null; then
-        minfo "Installing conda-pack ..."
-        conda install --yes --channel=conda-forge conda-pack
+    conda_env_name=${CONDA_DEFAULT_ENV}    
+    conda_pack_cache_file=$(conda_pack)
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        exit "$exit_code"
     fi
-    mdebug "- Using conda-pack $(conda_pack_version)"
-
-    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
-    assert_dir_exists "${CONDA_PREFIX}"
-    conda_pack_cache_path=$(dirname "${CONDA_PREFIX}")
-    mdebug "- Stage cache path: ${conda_pack_cache_path}"
-    assert_dir_exists "${conda_pack_cache_path}"
-
-    conda_pack_cache_file=${conda_pack_cache_path}/${CONDA_DEFAULT_ENV}.tar.gz
-
-    ## Skip existing conda-pack file?
-    if $force && [[ -f "${conda_pack_cache_file}" ]]; then
-        mdebug "Removing existing conda-pack file: ${conda_pack_cache_file}"
-        rm -f "${conda_pack_cache_file}"
-    fi
-
-    ## Create conda-pack file?
-    if [[ ! -f "${conda_pack_cache_file}" ]]; then
-        minfo "Packaging conda environment ..."
-        conda-pack --quiet --output="${conda_pack_cache_file}"
-    fi
-    mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
 
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
         path=${path}/${conda_env_name}
-        make_dir "${path}"
+    fi
+    if [[ -d "${path}" ]]; then
+        merror "Stage folder must not exist: ${path}"
     fi
     mdebug "- Stage path: ${path}"
-    assert_dir_exists "${path}"
 
     minfo "Extracting $(file_info "${conda_pack_cache_file}") to ${path}"
-    tar -xf "${conda_pack_cache_file}" -C "${path}"
-    chmod -R u+w "${path}"
+    t0=$SECONDS
+    ## Create stage folder so it's blocked while we extract
+    make_dir "${path}"
+    ## Extract atomically, i.e. write to temporary folder and rename
+    make_dir "${path}.tmp"
+    tar -xf "${conda_pack_cache_file}" -C "${path}.tmp"
+    chmod -R u+w "${path}.tmp"
+    remove_dir "${path}"
+    mv "${path}.tmp" "${path}"
+    dt=$((SECONDS - t0))
+    minfo "Total extract time: ${dt} seconds"
 
     ## Record original conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
 
-    mdebug "- Unpacking"
+    minfo "Unpacking"
+    t0=$SECONDS
     # shellcheck source=/dev/null
     source "${path}/bin/activate"
     conda-unpack
+    dt=$((SECONDS - t0))
+    minfo "Total 'conda-unpack' time: ${dt} seconds"
+    
     ## Set the conda prompt used by PS1 prompt (optional)
     conda config --env --set env_prompt "(${conda_env_name}*) "
     

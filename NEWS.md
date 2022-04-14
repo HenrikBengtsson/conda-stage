@@ -1,5 +1,38 @@
 # conda-stage
 
+## Version 0.3.0 [2022-04-14]
+
+New Features:
+
+* Add `conda-stage --pack` to run `conda-pack` on an active conda
+  environment and return.  Together with `--force`, this can be used
+  to re-package an already packages environment.
+
+* Report on progress when running `conda-pack`.  This can be disabled
+  with option `--quiet`.
+
+* Now verbose output has timing information for the different steps.
+
+* Now an error is produced if installation of 'conda-pack' failed.
+
+* Now the 'conda-pack' tarball is created atomically by first
+  outputting to a `.tmp.*.tar.gz` file, which is renamed to `*.tar.gz`
+  on success.  This lowers the risk for ending up with a partially
+  written `*.tar.gz` due to user interrupts or disk failures.
+
+* Now the 'conda-pack':ed tarball is extracted atomically by
+  extracting to a `*.tmp/` folder, which is renamed to `*/` on
+  success.  This lowers the risk for partially staged conda
+  environments.
+
+Bug Fixes:
+
+* `conda-stage()` choked on output message produced from installing
+  `conda-pack`. Now such output is redirected to standard error, which
+  makes them also visible to the end user.  This respects option
+  `--quiet`.
+
+
 ## Version 0.2.0 [2022-04-13]
 
 New Features:

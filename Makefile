@@ -1,5 +1,7 @@
 SHELL=bash
 
+check: shellcheck spelling
+
 shellcheck:
 	cd bin; \
 	shellcheck -x -s bash conda-stage.sh; \
