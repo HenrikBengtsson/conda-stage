@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.2.0-9003 [2022-04-14]
+## Version 0.2.0-9004 [2022-04-14]
 
 New Features:
 
@@ -9,9 +9,10 @@ New Features:
 
 Bug Fixes:
 
-* `conda-stage()` would choke on output message produced from installing
+* `conda-stage()` choked on output message produced from installing
   `conda-pack`. Now such output is redirected to standard error, which
-  makes them also visible to the end user.
+  makes them also visible to the end user.  This respects option
+  `--quiet`.
 
 
 ## Version 0.2.0 [2022-04-13]

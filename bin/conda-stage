@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9003
+### Version: 0.2.0-9004
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -253,7 +253,14 @@ if [[ "${action}" == "stage" ]]; then
         ## WORKAROUND: 'conda install' outputs some "progress" to stdout, not
         ## stderr (https://github.com/HenrikBengtsson/conda-stage/issues/15)
         ## Because of this, we direct stdout to stderr here.
-        1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
+        ## WORKAROUND 2: conda install --quiet does _not_ silence its stdout
+        ## output, which means we have to redirect everything to /dev/null
+        ## if verbose=false.
+        if $verbose; then
+            1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
+        else
+            conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
+        fi
     fi
     mdebug "- Using conda-pack $(conda_pack_version)"
 
