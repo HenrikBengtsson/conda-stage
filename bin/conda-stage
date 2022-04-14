@@ -38,7 +38,7 @@
 ###
 ###  conda-stage --pack --force
 ###
-### Version: 0.2.0-9008
+### Version: 0.2.0-9009
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -91,7 +91,23 @@ function conda_pack_version {
 }    
 
 
+function conda_pack_cache_file {
+    local path
+    
+    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
+    assert_dir_exists "${CONDA_PREFIX}"
+    path=$(dirname "${CONDA_PREFIX}")
+    mdebug "- Stage cache path: ${path}"
+    assert_dir_exists "${path}"
+
+    echo "${path}/${CONDA_DEFAULT_ENV}.tar.gz"
+}
+
 function conda_pack {
+    local opts
+    local file
+    local tmp_tarball
+    
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
         merror "No active conda environment, e.g. 'conda activate <name>'"
     fi
@@ -127,22 +143,16 @@ function conda_pack {
     fi
     mdebug "- Using conda-pack $(conda_pack_version)"
 
-    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
-    assert_dir_exists "${CONDA_PREFIX}"
-    conda_pack_cache_path=$(dirname "${CONDA_PREFIX}")
-    mdebug "- Stage cache path: ${conda_pack_cache_path}"
-    assert_dir_exists "${conda_pack_cache_path}"
-
-    conda_pack_cache_file=${conda_pack_cache_path}/${CONDA_DEFAULT_ENV}.tar.gz
+    file=$(conda_pack_cache_file)
 
     ## Skip existing conda-pack file?
-    if $force && [[ -f "${conda_pack_cache_file}" ]]; then
-        mdebug "Removing existing conda-pack file: ${conda_pack_cache_file}"
-        rm -f "${conda_pack_cache_file}"
+    if $force && [[ -f "${file}" ]]; then
+        mdebug "Removing existing conda-pack file: ${file}"
+        rm -f "${file}"
     fi
 
     ## Create conda-pack file?
-    if [[ ! -f "${conda_pack_cache_file}" ]]; then
+    if [[ ! -f "${file}" ]]; then
         minfo "Packaging conda environment ..."
         opts=()
         if ! $verbose; then
@@ -154,18 +164,18 @@ function conda_pack {
         ## 'conda-pack' looks at the filename extension, we can just append
         ## '.tmp' at the end, because that'll be an error. Instead, we
         ## prepend '.tmp.' to the basename.
-        tmp_tarball=${conda_pack_cache_path}/.tmp.${CONDA_DEFAULT_ENV}.tar.gz
+        tmp_tarball=$(dirname "${file}")/.tmp.$(basename "${file}")
         
         ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
         ## (https://github.com/conda/conda-pack/issues/217). Because of this,
         ## we direct stdout to stderr here.
         1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
-        mv "${tmp_tarball}" "${conda_pack_cache_file}"
+        mv "${tmp_tarball}" "${file}"
     fi
-    mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
-    assert_file_exists "${conda_pack_cache_file}"
+    mdebug "- Packaged conda environment: $(file_info "${file}")"
+    assert_file_exists "${file}"
     
-    echo "${conda_pack_cache_file}"
+    echo "${file}"
 }
 
 function file_info {
@@ -283,7 +293,12 @@ if [[ "${action}" == "pack" ]]; then
     minfo "Package current conda environment (${CONDA_PREFIX}) to cache ..."
     mdebug "- Using conda-stage $(version)"
 
-    conda_env_name=${CONDA_DEFAULT_ENV}    
+    ## Already done?
+    file=$(conda_pack_cache_file)
+    if ! $force && [[ -f "${file}" ]]; then
+        merror "Package tarball already exists. Use --force to recreate: ${file}"
+    fi
+
     conda_pack_cache_file=$(conda_pack)
     minfo "Created conda-pack tarball: ${conda_pack_cache_file}"
     exit 0
