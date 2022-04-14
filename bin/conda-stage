@@ -230,6 +230,7 @@ if [[ "${action}" == "stage" ]]; then
         merror "No active conda environment, e.g. 'conda activate <name>'"
     fi
     mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
+    conda_env_name=${CONDA_DEFAULT_ENV}    
 
     ## Assert that environment is not already staged
     if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
@@ -270,7 +271,9 @@ if [[ "${action}" == "stage" ]]; then
     mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
 
     if [[ -z $path ]]; then
-        path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage_XXXXXXXXXX)
+        path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
+        path=${path}/${conda_env_name}
+        make_dir "${path}"
     fi
     mdebug "- Stage path: ${path}"
     assert_dir_exists "${path}"
@@ -282,14 +285,12 @@ if [[ "${action}" == "stage" ]]; then
     ## Record original conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
 
-    conda_env=${CONDA_DEFAULT_ENV}    
-    
     mdebug "- Unpacking"
     # shellcheck source=/dev/null
     source "${path}/bin/activate"
     conda-unpack
     ## Set the conda prompt used by PS1 prompt (optional)
-    conda config --env --set env_prompt "(${conda_env}*) "
+    conda config --env --set env_prompt "(${conda_env_name}*) "
     
     if $readonly; then
         mdebug "- Make read-only"
