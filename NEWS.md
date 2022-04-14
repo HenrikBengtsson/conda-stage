@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.2.0-9010 [2022-04-14]
+## Version 0.2.0-9011 [2022-04-14]
 
 New Features:
 
@@ -10,6 +10,8 @@ New Features:
 
 * Report on progress when running `conda-pack`.  This can be disabled
   with option `--quiet`.
+
+* Now verbose output has timing information for the different steps.
 
 * Now an error is produced if installation of 'conda-pack' failed.
 
