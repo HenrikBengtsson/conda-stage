@@ -285,7 +285,7 @@ if [[ "${action}" == "stage" ]]; then
     ## Record original conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
 
-    mdebug "- Unpacking"
+    minfo "Unpacking"
     # shellcheck source=/dev/null
     source "${path}/bin/activate"
     conda-unpack
