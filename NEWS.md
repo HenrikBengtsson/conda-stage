@@ -1,8 +1,10 @@
 # conda-stage
 
-## Version 0.2.0-9000 [2022-04-13]
+## Version 0.2.0-9001 [2022-04-14]
 
-* ...
+New Features:
+
+* Report on progress when running `conda-pack`.
 
 
 ## Version 0.2.0 [2022-04-13]

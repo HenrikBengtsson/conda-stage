@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9000
+### Version: 0.2.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -266,7 +266,10 @@ if [[ "${action}" == "stage" ]]; then
     ## Create conda-pack file?
     if [[ ! -f "${conda_pack_cache_file}" ]]; then
         minfo "Packaging conda environment ..."
-        conda-pack --quiet --output="${conda_pack_cache_file}"
+        ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
+        ## (https://github.com/conda/conda-pack/issues/217). Because of this,
+        ## we direct stdout to stderr here.
+        1>&2 conda-pack --output="${conda_pack_cache_file}"
     fi
     mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
 
