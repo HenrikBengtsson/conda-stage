@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9005
+### Version: 0.2.0-9006
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -304,14 +304,21 @@ if [[ "${action}" == "stage" ]]; then
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
         path=${path}/${conda_env_name}
-        make_dir "${path}"
+    fi
+    if [[ -d "${path}" ]]; then
+        merror "Stage folder must not exist: ${path}"
     fi
     mdebug "- Stage path: ${path}"
-    assert_dir_exists "${path}"
 
     minfo "Extracting $(file_info "${conda_pack_cache_file}") to ${path}"
-    tar -xf "${conda_pack_cache_file}" -C "${path}"
-    chmod -R u+w "${path}"
+    ## Create stage folder so it's blocked while we extract
+    make_dir "${path}"
+    ## Extract atomically, i.e. write to temporary folder and rename
+    make_dir "${path}.tmp"
+    tar -xf "${conda_pack_cache_file}" -C "${path}.tmp"
+    chmod -R u+w "${path}.tmp"
+    remove_dir "${path}"
+    mv "${path}.tmp" "${path}"
 
     ## Record original conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
