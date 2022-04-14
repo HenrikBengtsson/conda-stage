@@ -275,7 +275,7 @@ if [[ "${action}" == "stage" ]]; then
     mdebug "- Stage path: ${path}"
     assert_dir_exists "${path}"
 
-    minfo "Extracting ${conda_pack_cache_file} $(file_info "${conda_pack_cache_file}") to ${path}"
+    minfo "Extracting $(file_info "${conda_pack_cache_file}") to ${path}"
     tar -xf "${conda_pack_cache_file}" -C "${path}"
     chmod -R u+w "${path}"
 
