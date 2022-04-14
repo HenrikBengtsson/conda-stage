@@ -27,14 +27,13 @@ $ conda activate myenv
 /home/alice/.conda/envs/myenv/bin/python
 (myenv) $ conda-stage
 (myenv*) $ which python
-/tmp/alice/conda-stage_VlQrpSj0BT/bin/python
+/tmp/alice/conda-stage_VlQr/myenv/bin/python
 ```
 
 To unstage, that is, reactivate the original environment 'myenv' and remove all staged files, do:
 
 ```sh
 (myenv*) $ conda-stage --unstage
-(myenv) $ conda-stage
 (myenv) $ which python
 /home/alice/.conda/envs/myenv/bin/python
 (myenv) $ conda deactivate
