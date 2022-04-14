@@ -38,7 +38,7 @@
 ###
 ###  conda-stage --pack --force
 ###
-### Version: 0.3.0
+### Version: 0.3.0-9000
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
