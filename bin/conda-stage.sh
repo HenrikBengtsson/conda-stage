@@ -35,10 +35,6 @@ function conda-stage() {
         return 2
     fi
 
-    echo "-- tf_res -----------------------------"
-    cat "${tf_res}"
-    echo "---------------------------------------"
-    
     ## Parse log file
     action=$(grep -E "^action:" "$tf_log" | sed -E 's/^action:[[:space:]]*//')
     rm "${tf_log}"
