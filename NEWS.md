@@ -1,11 +1,16 @@
 # conda-stage
 
-## Version 0.2.0-9004 [2022-04-14]
+## Version 0.2.0-9005 [2022-04-14]
 
 New Features:
 
 * Report on progress when running `conda-pack`.  This can be disabled
   with option `--quiet`.
+
+* Now `conda-pack` creates the tarball atomically by first outputting
+  to a `.tmp.*.tar.gz` file, which is renamed to `*.tar.gz` on success.
+  This lowers the risk for ending up with a partially written
+  `*.tar.gz` due to user interrupts or disk failures.
 
 Bug Fixes:
 

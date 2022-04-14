@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9004
+### Version: 0.2.0-9005
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -286,10 +286,18 @@ if [[ "${action}" == "stage" ]]; then
             opts+=("--quiet")
         fi
         mdebug "Additional 'conda-pack' options: ${opts[*]}"
+        ## ROBUSTNESS: Have 'conda-pack' produce the tarball atomically by
+        ## writing to a temporary file which is renamed on success.  Since
+        ## 'conda-pack' looks at the filename extension, we can just append
+        ## '.tmp' at the end, because that'll be an error. Instead, we
+        ## prepend '.tmp.' to the basename.
+        tmp_tarball=${conda_pack_cache_path}/.tmp.${CONDA_DEFAULT_ENV}.tar.gz
+        
         ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
         ## (https://github.com/conda/conda-pack/issues/217). Because of this,
         ## we direct stdout to stderr here.
-        1>&2 conda-pack "${opts[@]}" --output="${conda_pack_cache_file}"
+        1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
+        mv "${tmp_tarball}" "${conda_pack_cache_file}"
     fi
     mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
 
