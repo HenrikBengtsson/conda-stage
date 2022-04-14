@@ -51,7 +51,20 @@ function conda-stage() {
             echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Empty result."
             return 2
         fi
+
+        ## WORKAROUND: This will make the PS1 prompt for the original
+        ## conda environment be correct when unstaging. /HB 2022-04-13
+        if [[ $action == "unstage" ]]; then
+            conda deactivate
+        fi
+        
         eval "$cmd"
+        
+        ## WORKAROUND: This will make the PS1 prompt for the staged
+        ## conda environment be correct when staging. /HB 2022-04-13
+        if [[ $action == "stage" ]]; then
+            eval "$cmd"
+        fi
     else
         ## For all other actions, echo the captured standard output
         cat "${tf_res}"

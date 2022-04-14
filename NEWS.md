@@ -2,7 +2,10 @@
 
 ## Version 0.1.1-9000 [2022-04-13]
 
-* ...
+New Features:
+
+* When used by Conda, the command-line prompt is now the name of the
+  original conda environment suffixed by an asterisk, e.g. `(myenv*)`.
 
 
 ## Version 0.1.1 [2022-04-13]
