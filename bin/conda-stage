@@ -225,7 +225,7 @@ if [[ "${action}" == "unstage" ]]; then
 fi
 
 if [[ "${action}" == "stage" ]]; then
-    minfo "Staging current conda (${CONDA_PREFIX}) environment to local disk ..."
+    minfo "Staging current conda environment (${CONDA_PREFIX}) to local disk ..."
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
         merror "No active conda environment, e.g. 'conda activate <name>'"
     fi
