@@ -23,15 +23,22 @@ To stage conda environment 'myenv' to local disk and activate there, do:
 
 ```sh
 $ conda activate myenv
-$ conda-stage
-$ which python
+(myenv) $ which python
+/home/alice/.conda/envs/myenv/bin/python
+(myenv) $ conda-stage
+(myenv*) $ which python
 /tmp/alice/conda-stage_VlQrpSj0BT/bin/python
 ```
 
 To unstage, that is, reactivate the original environment 'myenv' and remove all staged files, do:
 
 ```sh
-$ conda-stage --unstage
+(myenv*) $ conda-stage --unstage
+(myenv) $ conda-stage
+(myenv) $ which python
+/home/alice/.conda/envs/myenv/bin/python
+(myenv) $ conda deactivate
+$
 ```
 
 For further help, call:
