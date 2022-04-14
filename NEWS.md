@@ -1,10 +1,11 @@
 # conda-stage
 
-## Version 0.2.0-9001 [2022-04-14]
+## Version 0.2.0-9002 [2022-04-14]
 
 New Features:
 
-* Report on progress when running `conda-pack`.
+* Report on progress when running `conda-pack`.  This can be disabled
+  with option `--quiet`.
 
 
 ## Version 0.2.0 [2022-04-13]
