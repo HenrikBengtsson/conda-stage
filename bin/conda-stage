@@ -35,7 +35,7 @@
 ###  conda-stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.2.0-9006
+### Version: 0.2.0-9007
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -86,6 +86,84 @@ function conda_pack_version {
     [[ $? -eq 0 ]] || return 1
     sed -E 's/^conda-pack[[:space:]]+//' <<< "${res}"
 }    
+
+
+function conda_pack {
+    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+        merror "No active conda environment, e.g. 'conda activate <name>'"
+    fi
+    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
+
+    ## Assert that environment is not already staged
+    if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+         merror "Conda environment is already staged and active: ${CONDA_PREFIX}"
+    fi
+    
+    assert_conda
+    mdebug "- Using conda $(conda_version)"
+
+    ## Install conda-pack?
+    if ! command -v conda-pack &> /dev/null; then
+        minfo "Installing conda-pack ..."
+        opts=("--yes")
+        if ! $verbose; then
+            opts+=("--quiet")
+        fi
+        mdebug "Additional 'conda install' options: ${opts[*]}"
+        ## WORKAROUND: 'conda install' outputs some "progress" to stdout, not
+        ## stderr (https://github.com/HenrikBengtsson/conda-stage/issues/15)
+        ## Because of this, we direct stdout to stderr here.
+        ## WORKAROUND 2: conda install --quiet does _not_ silence its stdout
+        ## output, which means we have to redirect everything to /dev/null
+        ## if verbose=false.
+        if $verbose; then
+            1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
+        else
+            conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
+        fi
+    fi
+    mdebug "- Using conda-pack $(conda_pack_version)"
+
+    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
+    assert_dir_exists "${CONDA_PREFIX}"
+    conda_pack_cache_path=$(dirname "${CONDA_PREFIX}")
+    mdebug "- Stage cache path: ${conda_pack_cache_path}"
+    assert_dir_exists "${conda_pack_cache_path}"
+
+    conda_pack_cache_file=${conda_pack_cache_path}/${CONDA_DEFAULT_ENV}.tar.gz
+
+    ## Skip existing conda-pack file?
+    if $force && [[ -f "${conda_pack_cache_file}" ]]; then
+        mdebug "Removing existing conda-pack file: ${conda_pack_cache_file}"
+        rm -f "${conda_pack_cache_file}"
+    fi
+
+    ## Create conda-pack file?
+    if [[ ! -f "${conda_pack_cache_file}" ]]; then
+        minfo "Packaging conda environment ..."
+        opts=()
+        if ! $verbose; then
+            opts+=("--quiet")
+        fi
+        mdebug "Additional 'conda-pack' options: ${opts[*]}"
+        ## ROBUSTNESS: Have 'conda-pack' produce the tarball atomically by
+        ## writing to a temporary file which is renamed on success.  Since
+        ## 'conda-pack' looks at the filename extension, we can just append
+        ## '.tmp' at the end, because that'll be an error. Instead, we
+        ## prepend '.tmp.' to the basename.
+        tmp_tarball=${conda_pack_cache_path}/.tmp.${CONDA_DEFAULT_ENV}.tar.gz
+        
+        ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
+        ## (https://github.com/conda/conda-pack/issues/217). Because of this,
+        ## we direct stdout to stderr here.
+        1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
+        mv "${tmp_tarball}" "${conda_pack_cache_file}"
+    fi
+    mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
+    assert_file_exists "${conda_pack_cache_file}"
+    
+    echo "${conda_pack_cache_file}"
+}
 
 function file_info {
     assert_file_exists "${1:?}"
@@ -226,80 +304,10 @@ fi
 
 if [[ "${action}" == "stage" ]]; then
     minfo "Staging current conda environment (${CONDA_PREFIX}) to local disk ..."
-    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
-        merror "No active conda environment, e.g. 'conda activate <name>'"
-    fi
-    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
-    conda_env_name=${CONDA_DEFAULT_ENV}    
-
-    ## Assert that environment is not already staged
-    if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
-         merror "Conda environment is already staged and active: ${CONDA_PREFIX}"
-    fi
-    
     mdebug "- Using conda-stage $(version)"
-    
-    assert_conda
-    mdebug "- Using conda $(conda_version)"
 
-    ## Install conda-pack?
-    if ! command -v conda-pack &> /dev/null; then
-        minfo "Installing conda-pack ..."
-        opts=("--yes")
-        if ! $verbose; then
-            opts+=("--quiet")
-        fi
-        mdebug "Additional 'conda install' options: ${opts[*]}"
-        ## WORKAROUND: 'conda install' outputs some "progress" to stdout, not
-        ## stderr (https://github.com/HenrikBengtsson/conda-stage/issues/15)
-        ## Because of this, we direct stdout to stderr here.
-        ## WORKAROUND 2: conda install --quiet does _not_ silence its stdout
-        ## output, which means we have to redirect everything to /dev/null
-        ## if verbose=false.
-        if $verbose; then
-            1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
-        else
-            conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
-        fi
-    fi
-    mdebug "- Using conda-pack $(conda_pack_version)"
-
-    mdebug "- CONDA_PREFIX=${CONDA_PREFIX}"
-    assert_dir_exists "${CONDA_PREFIX}"
-    conda_pack_cache_path=$(dirname "${CONDA_PREFIX}")
-    mdebug "- Stage cache path: ${conda_pack_cache_path}"
-    assert_dir_exists "${conda_pack_cache_path}"
-
-    conda_pack_cache_file=${conda_pack_cache_path}/${CONDA_DEFAULT_ENV}.tar.gz
-
-    ## Skip existing conda-pack file?
-    if $force && [[ -f "${conda_pack_cache_file}" ]]; then
-        mdebug "Removing existing conda-pack file: ${conda_pack_cache_file}"
-        rm -f "${conda_pack_cache_file}"
-    fi
-
-    ## Create conda-pack file?
-    if [[ ! -f "${conda_pack_cache_file}" ]]; then
-        minfo "Packaging conda environment ..."
-        opts=()
-        if ! $verbose; then
-            opts+=("--quiet")
-        fi
-        mdebug "Additional 'conda-pack' options: ${opts[*]}"
-        ## ROBUSTNESS: Have 'conda-pack' produce the tarball atomically by
-        ## writing to a temporary file which is renamed on success.  Since
-        ## 'conda-pack' looks at the filename extension, we can just append
-        ## '.tmp' at the end, because that'll be an error. Instead, we
-        ## prepend '.tmp.' to the basename.
-        tmp_tarball=${conda_pack_cache_path}/.tmp.${CONDA_DEFAULT_ENV}.tar.gz
-        
-        ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
-        ## (https://github.com/conda/conda-pack/issues/217). Because of this,
-        ## we direct stdout to stderr here.
-        1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
-        mv "${tmp_tarball}" "${conda_pack_cache_file}"
-    fi
-    mdebug "- Packaged conda environment: $(file_info "${conda_pack_cache_file}")"
+    conda_env_name=${CONDA_DEFAULT_ENV}    
+    conda_pack_cache_file=$(conda_pack)
 
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
