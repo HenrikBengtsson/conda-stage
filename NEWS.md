@@ -1,11 +1,17 @@
 # conda-stage
 
-## Version 0.2.0-9002 [2022-04-14]
+## Version 0.2.0-9003 [2022-04-14]
 
 New Features:
 
 * Report on progress when running `conda-pack`.  This can be disabled
   with option `--quiet`.
+
+Bug Fixes:
+
+* `conda-stage()` would choke on output message produced from installing
+  `conda-pack`. Now such output is redirected to standard error, which
+  makes them also visible to the end user.
 
 
 ## Version 0.2.0 [2022-04-13]
