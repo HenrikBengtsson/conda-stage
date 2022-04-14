@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.2.0-9009 [2022-04-14]
+## Version 0.2.0-9010 [2022-04-14]
 
 New Features:
 
@@ -11,12 +11,14 @@ New Features:
 * Report on progress when running `conda-pack`.  This can be disabled
   with option `--quiet`.
 
-* Now the `conda-pack` tarball is created atomically by first
+* Now an error is produced if installation of 'conda-pack' failed.
+
+* Now the 'conda-pack' tarball is created atomically by first
   outputting to a `.tmp.*.tar.gz` file, which is renamed to `*.tar.gz`
   on success.  This lowers the risk for ending up with a partially
   written `*.tar.gz` due to user interrupts or disk failures.
 
-* Now the `conda-pack`:ed tarball is extracted atomically by
+* Now the 'conda-pack':ed tarball is extracted atomically by
   extracting to a `*.tmp/` folder, which is renamed to `*/` on
   success.  This lowers the risk for partially staged conda
   environments.

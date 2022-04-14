@@ -38,7 +38,7 @@
 ###
 ###  conda-stage --pack --force
 ###
-### Version: 0.2.0-9009
+### Version: 0.2.0-9010
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -139,6 +139,11 @@ function conda_pack {
             1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
         else
             conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
+        fi
+
+        ## Assert installation was successful
+        if ! command -v conda-pack &> /dev/null; then
+            merror "Failed to install 'conda-pack'"
         fi
     fi
     mdebug "- Using conda-pack $(conda_pack_version)"
@@ -300,6 +305,11 @@ if [[ "${action}" == "pack" ]]; then
     fi
 
     conda_pack_cache_file=$(conda_pack)
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        exit "$exit_code"
+    fi
+    
     minfo "Created conda-pack tarball: ${conda_pack_cache_file}"
     exit 0
 fi
@@ -338,6 +348,10 @@ if [[ "${action}" == "stage" ]]; then
 
     conda_env_name=${CONDA_DEFAULT_ENV}    
     conda_pack_cache_file=$(conda_pack)
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        exit "$exit_code"
+    fi
 
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
