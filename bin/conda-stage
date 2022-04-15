@@ -25,7 +25,8 @@
 ###                        staged (Default: `mktemp -d`)
 ### ---
 ###
-### Example:
+### Examples:
+###
 ###  conda-stage --help
 ###  conda-stage --version
 ###  conda-stage --version --full
@@ -54,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.4.1-9008
+### Version: 0.4.1-9009
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -238,6 +239,7 @@ while [[ $# -gt 0 ]]; do
     ## Options (--flags):
     if [[ "$1" == "--help" ]]; then
         action=help
+        full=true
     elif [[ "$1" == "--version" ]]; then
         action=version
     elif [[ "$1" == "--debug" ]]; then
@@ -302,6 +304,7 @@ done
 
 if [[ -z $action ]]; then
     action=help
+    full=false
 fi
 
 ## Log action to file?
@@ -311,7 +314,11 @@ fi
 
 ## --help should always be available prior to any validation errors
 if [[ $action == "help" ]]; then
-    help full
+    if $full; then
+        help full
+    else
+        help
+    fi
     _exit 0
 elif [[ $action == "version" ]]; then
     if $full; then
