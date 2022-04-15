@@ -461,6 +461,10 @@ if [[ "${action}" == "autounstage" ]]; then
         make_dir "${path}"
 
         cat > "${file}" << EOF
+## Can only unstage staged environments
+\${CONDA_STAGE_STAGED:-false} || return 0
+
+## Explicitly instructed to ignore unstaging?
 [[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
 \${CONDA_STAGE_QUIET:-false} || >&2 echo "${file} ..."
