@@ -374,6 +374,9 @@ if [[ "${action}" == "automate" ]]; then
   
       path=${CONDA_PREFIX}/etc/conda/activate.d
       mdebug "- path=${path}"
+      
+      ## Based on observations, 'conda activate' processes
+      ## activate.d/* scripts in lexicographic order.
       file=${path}/zzz.conda-stage-auto.sh
       mdebug "- file=${file}"
   
@@ -440,7 +443,13 @@ EOF
   
       path=${CONDA_PREFIX}/etc/conda/deactivate.d
       mdebug "- path=${path}"
-      file=${path}/zzz.conda-stage-auto.sh
+
+      ## Based on observations, 'conda deactivate' processes
+      ## deactivate.d/* scripts in reverse lexicographic order.
+      ## Because of this, the "unstage" file should be named
+      ## so that it is to be process at the very end, because
+      ## it will removed all files, including sibling files.
+      file=${path}/000.conda-stage-auto.sh
       mdebug "- file=${file}"
   
       if [[ "${autounstage}" == "enable" ]]; then
@@ -475,8 +484,8 @@ fi
 EOF
           assert_file_exists "${file}"
           mdebug "${file}: $(echo; cat "${file}")"
-  
-          file=${path}/000.conda-stage-auto.sh
+
+          file=${path}/zzz.conda-stage-auto.sh
           if $debug; then
               cat > "${file}" << EOF
 \${CONDA_STAGE_DEBUG:-false} || return 0
