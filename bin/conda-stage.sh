@@ -10,6 +10,7 @@ function conda-stage() {
     local exit_code
     local cmd
     local debug
+    local CONDA_STAGE_ACTION
     
     if [[ -z "${CONDA_STAGE_HOME}" ]]; then
         echo >&2 "ERROR: [INTERNAL] CONDA_STAGE_HOME not set"
@@ -68,6 +69,9 @@ function conda-stage() {
         return 2
     fi
 
+    CONDA_STAGE_ACTION=${action}
+    mdebug "CONDA_STAGE_ACTION=${CONDA_STAGE_ACTION}"
+    
     if [[ $action = "stage" ]] || [[ $action = "unstage" ]]; then
         cmd=$(cat "$tf_res")
         rm "${tf_res}"
@@ -76,21 +80,22 @@ function conda-stage() {
             return 2
         fi
 
-        mdebug "cmd='${cmd}'"
-
         ## WORKAROUND: This will make the PS1 prompt for the original
         ## conda environment be correct when unstaging. /HB 2022-04-13
         if [[ $action == "unstage" ]]; then
+            mdebug "conda deactivate ..."
             conda deactivate
             exit_code=$?
         fi
         
+        mdebug "$cmd ..."
         eval "$cmd"
         exit_code=$?
         
         ## WORKAROUND: This will make the PS1 prompt for the staged
         ## conda environment be correct when staging. /HB 2022-04-13
         if [[ $action == "stage" ]]; then
+            mdebug "$cmd ..."
             eval "$cmd"
             exit_code=$?
         fi
