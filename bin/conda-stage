@@ -38,7 +38,7 @@
 ###
 ###  conda-stage --pack --force
 ###
-### Version: 0.3.0-9000
+### Version: 0.3.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -342,7 +342,11 @@ if [[ "${action}" == "unstage" ]]; then
 
     t0=$SECONDS
     minfo "Removing all staged files: ${CONDA_PREFIX}"
-    rm -rf "${CONDA_PREFIX}"
+    ## Atomic removal
+    mv "${CONDA_PREFIX}" "${CONDA_PREFIX}.tmp"
+    ## In case it's a read-only staged folder, unlock it
+    chmod -R u+w "${CONDA_PREFIX}.tmp"
+    rm -rf "${CONDA_PREFIX}.tmp"
 
     cmd="conda activate \"${original}\""
     mdebug "Command to activate original conda environment: $cmd"

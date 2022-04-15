@@ -1,8 +1,11 @@
 # conda-stage
 
-## Version 0.3.0-9000 [2022-04-14]
+## Version 0.3.0-9001 [2022-04-14]
 
-* ...
+Bug Fixes:
+
+* `conda-stage --unstage` failed to remove read-only staged conda
+  environments.
 
 
 ## Version 0.3.0 [2022-04-14]
