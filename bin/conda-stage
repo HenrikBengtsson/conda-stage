@@ -42,7 +42,7 @@
 ###  conda-stage --auto-stage=enable --read-only
 ###  conda-stage --auto-stage=disable
 ###
-### Version: 0.4.0
+### Version: 0.4.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -363,7 +363,8 @@ if [[ "${action}" == "autostage" ]]; then
         opts=()
         if $readonly; then
             opts+=("--read-only")
-        fi    
+        fi
+        make_dir "${path}"
         cat > "${file}.tmp" << EOF
 if [[ \${CONDA_STAGE_ACTION} != "unstage" ]]; then
     if command -v conda-stage > /dev/null; then
