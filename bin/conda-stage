@@ -30,24 +30,31 @@
 ###  conda-stage --version
 ###  conda-stage --version --full
 ###
-###  ## Bash only
+###  ## Enable auto-staging
+###  conda-stage --auto-stage=enable --read-only --auto-stage=enable
+###  conda activate myenv
+###  conda deactivate
+###
+###  ## Disable auto-staging
+###  CONDA_STAGE=false conda activate myenv
+###  conda-stage --auto-stage=disable --auto-stage=disable
+###  conda deactivate
+###
+###  ## Repack environment after updating or install new software
+###  conda-stage --pack --force
+###
+###  ## Manual staging: Bash only
 ###  eval "$(conda-stage --source)"
 ###  conda activate myenv
 ###  conda-stage --stage
 ###
-###  ## Other shells
+###  ## Manual staging: Other shells
 ###  conda activate myenv
 ###  stage_path=$(mktemp -d)
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-###  conda-stage --pack --force
-###
-###  conda-stage --auto-stage=enable --read-only --auto-stage=disable
-###  conda activate
-###  conda deactivate
-###
-### Version: 0.4.1-9007
+### Version: 0.4.1-9008
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -389,13 +396,15 @@ if [[ "${action}" == "automate" ]]; then
           make_dir "${path}"
   
           cat > "${file}" << EOF
+## Disabled?
+\${CONDA_STAGE:-false} && return 0
+
 ## Prevent automatic staging after deactivation of staged environment
 if \${CONDA_STAGE_AUTOSTAGED:-false}; then
     unset CONDA_STAGE_AUTOSTAGED
     return 0
 fi
 [[ -n \${CONDA_STAGE_ACTION} ]] && return 0
-[[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
 \${CONDA_STAGE_DEBUG:-false} && >&2 echo "${file} ..."
 
@@ -415,6 +424,9 @@ EOF
           file=${path}/000.conda-stage-auto.sh
           if $debug; then
               cat > "${file}" << EOF
+## Disabled?
+\${CONDA_STAGE:-false} && return 0
+
 \${CONDA_STAGE_DEBUG:-false} || return 0
 >&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
@@ -456,6 +468,9 @@ EOF
           make_dir "${path}"
   
           cat > "${file}" << EOF
+## Disabled?
+\${CONDA_STAGE:-false} && return 0
+
 ## Prevent recursive unstaging on deactivation
 if \${CONDA_STAGE_AUTOUNSTAGED:-false}; then
     unset CONDA_STAGE_AUTOUNSTAGED
@@ -464,9 +479,6 @@ fi
 
 ## Can only unstage staged environments
 \${CONDA_STAGE_STAGED:-false} || return 0
-
-## Explicitly instructed to ignore unstaging?
-[[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
 \${CONDA_STAGE_DEBUG:-false} && >&2 echo "${file} ..."
 
@@ -488,6 +500,9 @@ EOF
           file=${path}/zzz.conda-stage-auto.sh
           if $debug; then
               cat > "${file}" << EOF
+## Disabled?
+\${CONDA_STAGE:-false} && return 0
+
 \${CONDA_STAGE_DEBUG:-false} || return 0
 >&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
