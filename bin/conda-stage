@@ -383,19 +383,24 @@ if [[ "${action}" == "autostage" ]]; then
         make_dir "${path}"
 
         cat > "${file}" << EOF
+if \${CONDA_STAGE_STAGED:-false}; then
+    unset CONDA_STAGE_STAGED
+    return 0
+fi
 [[ -n \${CONDA_STAGE_ACTION} ]] && return 0
 [[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ..."
+\${CONDA_STAGE_QUIET:-false} || >&2 echo "${file} ..."
 
 if command -v conda-stage > /dev/null; then
-    [[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
+    \${CONDA_STAGE_QUIET:-false} || >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
     conda-stage ${opts[*]}
+    export CONDA_STAGE_STAGED=true
 else
     >&2 echo "WARNING: Cannot auto-stage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
 fi
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ... done"
+\${CONDA_STAGE_QUIET:-false} || >&2 echo "${file} ... done"
 EOF
         assert_file_exists "${file}"
         mdebug "${file}: $(echo; cat "${file}")"
@@ -403,7 +408,7 @@ EOF
         file=${path}/000.conda-stage-auto.sh
         if $debug; then
             cat > "${file}" << EOF
-[[ \${CONDA_STAGE_QUIET} == "true" ]] && return 0
+\${CONDA_STAGE_QUIET:-false} && return 0
 >&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
 >&2 echo "${file} ... done"
@@ -457,16 +462,16 @@ if [[ "${action}" == "autounstage" ]]; then
         cat > "${file}" << EOF
 [[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ..."
+\${CONDA_STAGE_QUIET:-false} || >&2 echo "${file} ..."
 
 if command -v conda-stage > /dev/null; then
-    [[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "Auto-unstaging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-unstage=disable' before 'conda deactivate'"
+    \${CONDA_STAGE_QUIET:-false} || >&2 echo "Auto-unstaging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-unstage=disable' before 'conda deactivate'"
     conda-stage --unstage
 else
     >&2 echo "WARNING: Cannot auto-unstage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
 fi
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ... done"
+\${CONDA_STAGE_QUIET:-false} || >&2 echo "${file} ... done"
 EOF
         assert_file_exists "${file}"
         mdebug "${file}: $(echo; cat "${file}")"
@@ -474,7 +479,7 @@ EOF
         file=${path}/000.conda-stage-auto.sh
         if $debug; then
             cat > "${file}" << EOF
-[[ \${CONDA_STAGE_QUIET} == "true" ]] && return 0
+\${CONDA_STAGE_QUIET:-false} && return 0
 >&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
 >&2 echo "${file} ... done"
@@ -601,7 +606,7 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\""
+    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\"; CONDA_STAGE_STAGED=true"
     mdebug "Command to activate staged Conda environment: $cmd"
     echo "$cmd"
     
