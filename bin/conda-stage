@@ -48,7 +48,7 @@
 ###  conda-stage
 ###  conda-stage --auto-destage=enable
 ###
-### Version: 0.4.1-9004
+### Version: 0.4.1-9005
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -435,8 +435,8 @@ EOF
     if [[ -f "${file}" ]]; then
         rm "${file}"
         [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
+        minfo "Removed outdated 'conda-pack' tarball"
     fi
-    minfo "Removed outdated 'conda-pack' tarball"
     
     exit 0
 fi
@@ -446,10 +446,6 @@ if [[ "${action}" == "autounstage" ]]; then
     minfo "Configuring automatic unstaging of staged Conda environment  ..."
     assert_active_conda_environment
 
-    if [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
-        merror "Cannot configure auto-unstaging of a non-staged environment. Call 'conda-stage' first"
-    fi
-    
     mdebug "- autounstage=${autounstage}"
 
     path=${CONDA_PREFIX}/etc/conda/deactivate.d
@@ -515,6 +511,16 @@ EOF
         minfo "Disabled auto-unstaging"
     fi
 
+    ## Installed auto-unstaging to original environment?
+    if [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+        file=$(conda_pack_cache_file)
+        if [[ -f "${file}" ]]; then
+            rm "${file}"
+            [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
+            minfo "Removed outdated 'conda-pack' tarball"
+        fi
+    fi
+    
     exit 0
 fi
 
