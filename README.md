@@ -51,19 +51,36 @@ INFO: Total unstage time: 0 seconds
 $ 
 ```
 
-To temporarily disable automatic staging when activating the environment, set environment variable `CONDA_STAGE=false` before activation, e.g.
+To temporarily disable automatic staging, set environment variable `CONDA_STAGE=false` before activation, e.g.
 
 ```sh
-$ CONDA_STAGE=false conda activate myenv
+$ export CONDA_STAGE=false
+$ conda activate myenv
 (myenv) $ 
 ```
 
-This can be useful to reconfigure the environment, because you cannot configure the environment when staged;
+This can be useful when you want to update the Conda environment, or install additional software, because that cannot be done to staged environment;
 
 ```sh
-$ CONDA_STAGE=false conda activate myenv
+$ export CONDA_STAGE=false
+$ conda activate myenv
+(myenv) $ conda update --all
+(myenv) $ conda-stage --pack --force
+(myenv) $ conda deactivate
+$ unset CONDA_STAGE
+$
+```
+
+We call `conda-stage --pack --force` to make sure the updated are reflected in the cached "tarball" that is used for staging.
+
+It is also necessary if you want to disable auto-staging;
+
+```sh
+$ export CONDA_STAGE=false
+$ conda activate myenv
 (myenv) $ conda-stage --auto-stage=disable
 (myenv) $ conda deactivate
+$ unset CONDA_STAGE
 $
 ```
 
