@@ -383,8 +383,9 @@ if [[ "${action}" == "autostage" ]]; then
         make_dir "${path}"
 
         cat > "${file}" << EOF
-if \${CONDA_STAGE_STAGED:-false}; then
-    unset CONDA_STAGE_STAGED
+## Prevent automatic staging after deactivation of staged environment
+if \${CONDA_STAGE_AUTOSTAGED:-false}; then
+    unset CONDA_STAGE_AUTOSTAGED
     return 0
 fi
 [[ -n \${CONDA_STAGE_ACTION} ]] && return 0
@@ -395,6 +396,7 @@ fi
 if command -v conda-stage > /dev/null; then
     \${CONDA_STAGE_QUIET:-false} || >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
     conda-stage ${opts[*]}
+    export CONDA_STAGE_AUTOSTAGED=true
 else
     >&2 echo "WARNING: Cannot auto-stage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
 fi
