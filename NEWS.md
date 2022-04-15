@@ -1,6 +1,13 @@
 # conda-stage
 
-## Version 0.4.1-9002 [2022-04-15]
+## Version 0.4.1-9003 [2022-04-15]
+
+Significant changes:
+
+* Now `conda-stage --stage` deactivates the original Conda environment
+  before activating the staged one. Because of this, deactivation of
+  the staged environment will _no longer_ revert back to the original
+  environment.
 
 New Features:
 

@@ -48,7 +48,7 @@
 ###  conda-stage
 ###  conda-stage --auto-destage=enable
 ###
-### Version: 0.4.1-9002
+### Version: 0.4.1-9003
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -531,8 +531,7 @@ if [[ "${action}" == "unstage" ]]; then
     chmod -R u+w "${CONDA_PREFIX}.tmp"
     rm -rf "${CONDA_PREFIX}.tmp"
 
-    cmd="CONDA_STAGE_ACTION=unstage conda activate \"${original}\""
-    cmd="CONDA_STAGE_ACTION=unstage false"
+    cmd="CONDA_STAGE_ACTION=unstage conda deactivate"
     mdebug "Command to activate original Conda environment: $cmd"
     echo "$cmd"
 
@@ -618,7 +617,9 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\""
+    cmd="CONDA_STAGE_ACTION=activate"
+    cmd="${cmd}; conda deactivate" ## do not revert back to original env
+    cmd="${cmd}; conda activate \"${path}\""
     mdebug "Command to activate staged Conda environment: $cmd"
     echo "$cmd"
     
