@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 
-CONDA_STAGE=$(dirname "${BASH_SOURCE%/}")
-[[ -L "${CONDA_STAGE}" ]] && CONDA_STAGE=$(readlink "${CONDA_STAGE}")
-CONDA_STAGE=$(realpath "${CONDA_STAGE}/conda-stage")
+CONDA_STAGE_HOME=$(dirname "$(dirname "${BASH_SOURCE%/}")")
+[[ -L "${CONDA_STAGE_HOME}" ]] && CONDA_STAGE_HOME=$(readlink "${CONDA_STAGE_HOME}")
+CONDA_STAGE_HOME=$(realpath "${CONDA_STAGE_HOME}")
 
 function conda-stage() {
     local tf_res
@@ -13,8 +13,8 @@ function conda-stage() {
 
     debug=${CONDA_STAGE_DEBUG:-false}
     
-    if [[ -z "${CONDA_STAGE}" ]]; then
-        echo >&2 "INTERNAL ERROR: CONDA_STAGE not set"
+    if [[ -z "${CONDA_STAGE_HOME}" ]]; then
+        echo >&2 "INTERNAL ERROR: CONDA_STAGE_HOME not set"
         return 1
     fi
 
@@ -22,7 +22,7 @@ function conda-stage() {
     tf_log=$(mktemp)
 
     ## Stage to local disk
-    CONDA_STAGE_LOGFILE="${tf_log}" "${CONDA_STAGE}" "$@" 1> "$tf_res"
+    CONDA_STAGE_LOGFILE="${tf_log}" "${CONDA_STAGE_HOME}/bin/conda-stage" "$@" 1> "$tf_res"
     exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
         cat "$tf_res"
