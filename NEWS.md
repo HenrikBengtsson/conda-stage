@@ -1,5 +1,13 @@
 # conda-stage
 
+## Version 0.4.1-9001 [2022-04-15]
+
+New Features:
+
+* Now `conda-stage --auto-stage=enable` removes the previously cached
+  'conda-pack' tarball, if it exists.
+
+
 ## Version 0.4.1 [2022-04-14]
 
 Bug Fixes:
@@ -39,7 +47,7 @@ New Features:
 
 * Now verbose output has timing information for the different steps.
 
-* Now an error is produced if installation of 'conda-pack' failed.
+* Now an error is produced if installation of **conda-pack** failed.
 
 * Now the 'conda-pack' tarball is created atomically by first
   outputting to a `.tmp.*.tar.gz` file, which is renamed to `*.tar.gz`
