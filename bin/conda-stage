@@ -42,7 +42,7 @@
 ###  conda-stage --auto-stage=enable --read-only
 ###  conda-stage --auto-stage=disable
 ###
-### Version: 0.4.1
+### Version: 0.4.1-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -463,10 +463,11 @@ if [[ "${action}" == "stage" ]]; then
     ## Record original conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
 
-    minfo "Unpacking"
+    minfo "Activating staged environment"
     t0=$SECONDS
     # shellcheck source=/dev/null
-    source "${path}/bin/activate"
+    CONDA_STAGE_ACTION=activate source "${path}/bin/activate"
+    minfo "Unpacking (relocating)"
     conda-unpack
     dt=$((SECONDS - t0))
     minfo "Total 'conda-unpack' time: ${dt} seconds"
@@ -479,7 +480,7 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    cmd="CONDA_STAGE_ACTION=stage conda activate \"${path}\""
+    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\""
     mdebug "Command to activate staged conda environment: $cmd"
     echo "$cmd"
     
