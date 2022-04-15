@@ -25,7 +25,7 @@ To _configure_ existing Conda environment 'myenv' so that it is automatically st
 
 ```sh
 $ conda activate myenv
-(myenv) $ conda-stage --auto-stage=enable --auto-unstage=enable
+(myenv) $ conda-stage --auto-stage=enable
 (myenv) $ conda deactivate
 $ 
 ```
@@ -62,7 +62,7 @@ This can be useful to reconfigure the environment, because you cannot configure 
 
 ```sh
 $ CONDA_STAGE=false conda activate myenv
-(myenv) $ conda-stage --auto-stage=disable --auto-unstage=disable
+(myenv) $ conda-stage --auto-stage=disable
 (myenv) $ conda deactivate
 $
 ```

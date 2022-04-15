@@ -32,13 +32,13 @@
 ###  conda-stage --version --full
 ###
 ###  ## Enable auto-staging
-###  conda-stage --auto-stage=enable --read-only --auto-stage=enable
+###  conda-stage --auto-stage=enable --read-only
 ###  conda activate myenv
 ###  conda deactivate
 ###
 ###  ## Disable auto-staging
 ###  CONDA_STAGE=false conda activate myenv
-###  conda-stage --auto-stage=disable --auto-stage=disable
+###  conda-stage --auto-stage=disable
 ###  conda deactivate
 ###
 ###  ## Repack environment after updating or install new software
@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.4.1-9009
+### Version: 0.4.1-9010
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -282,6 +282,10 @@ while [[ $# -gt 0 ]]; do
             else
                 merror "Unknown value of option '--${key}=${value}'"
             fi
+            ## If not already set, set 'autounstage' accordingly. 
+            if [[ -z ${autounstage} ]]; then
+                autounstage=${autostage}
+            fi                          
         elif [[ "${key}" == "auto-unstage" ]]; then
             action=automate
             if [[ ${value} == "enable" ]]; then
@@ -404,7 +408,7 @@ if [[ "${action}" == "automate" ]]; then
   
           cat > "${file}" << EOF
 ## Disabled?
-\${CONDA_STAGE:-false} && return 0
+\${CONDA_STAGE:-true} || return 0
 
 ## Prevent automatic staging after deactivation of staged environment
 if \${CONDA_STAGE_AUTOSTAGED:-false}; then
@@ -432,7 +436,7 @@ EOF
           if $debug; then
               cat > "${file}" << EOF
 ## Disabled?
-\${CONDA_STAGE:-false} && return 0
+\${CONDA_STAGE:-true} || return 0
 
 \${CONDA_STAGE_DEBUG:-false} || return 0
 >&2 echo "${file} ..."
@@ -476,7 +480,7 @@ EOF
   
           cat > "${file}" << EOF
 ## Disabled?
-\${CONDA_STAGE:-false} && return 0
+\${CONDA_STAGE:-true} || return 0
 
 ## Prevent recursive unstaging on deactivation
 if \${CONDA_STAGE_AUTOUNSTAGED:-false}; then
@@ -508,7 +512,7 @@ EOF
           if $debug; then
               cat > "${file}" << EOF
 ## Disabled?
-\${CONDA_STAGE:-false} && return 0
+\${CONDA_STAGE:-true} || return 0
 
 \${CONDA_STAGE_DEBUG:-false} || return 0
 >&2 echo "${file} ..."
