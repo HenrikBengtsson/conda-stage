@@ -1,10 +1,16 @@
 # conda-stage
 
-## Version 0.3.0-9001 [2022-04-14]
+## Version 0.3.0-9002 [2022-04-14]
 
 Significant changes:
 
 * Renamed option `--readonly` to `--read-only`.
+
+New Features:
+
+* Add `conda-stage --auto-stage=enable` to automatically stage a conda
+  environment when activated.  Add `--read-only` to stage a read-only
+  environment.  To undo, call `conda-stage --auto-stage=disable`.
 
 Bug Fixes:
 
