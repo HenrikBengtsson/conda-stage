@@ -1,5 +1,13 @@
 # conda-stage
 
+## Version 0.4.1 [2022-04-14]
+
+Bug Fixes:
+
+* `conda-stage --auto-stage=enable` could fail, because it did not
+  created the '<env>/etc/conda/activate.d/' folder.
+
+
 ## Version 0.4.0 [2022-04-14]
 
 Significant changes:
