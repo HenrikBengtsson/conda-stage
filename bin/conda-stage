@@ -395,7 +395,6 @@ fi
 if command -v conda-stage > /dev/null; then
     \${CONDA_STAGE_QUIET:-false} || >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
     conda-stage ${opts[*]}
-    export CONDA_STAGE_STAGED=true
 else
     >&2 echo "WARNING: Cannot auto-stage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
 fi
@@ -597,7 +596,18 @@ if [[ "${action}" == "stage" ]]; then
     conda-unpack
     dt=$((SECONDS - t0))
     minfo "Total 'conda-unpack' time: ${dt} seconds"
-    
+
+    ## Set CONDA_STAGE environment variables when activated
+    path_d=${path}/etc/conda/activate.d
+    make_dir "${path_d}"
+    file=${path_d}/conda-stage-envs.sh
+    echo "export CONDA_STAGE_STAGED=true" > "$file"
+
+    path_d=${path}/etc/conda/deactivate.d
+    make_dir "${path_d}"
+    file=${path_d}/conda-stage-envs.sh
+    echo "unset CONDA_STAGE_STAGED" > "$file"
+
     ## Set the conda prompt used by PS1 prompt (optional)
     conda config --env --set env_prompt "(${conda_env_name}*) "
     
@@ -606,7 +616,7 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\"; CONDA_STAGE_STAGED=true"
+    cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\""
     mdebug "Command to activate staged Conda environment: $cmd"
     echo "$cmd"
     
