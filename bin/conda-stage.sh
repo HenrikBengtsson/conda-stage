@@ -10,14 +10,34 @@ function conda-stage() {
     local exit_code
     local cmd
     local debug
-
-    debug=${CONDA_STAGE_DEBUG:-false}
     
     if [[ -z "${CONDA_STAGE_HOME}" ]]; then
-        echo >&2 "INTERNAL ERROR: CONDA_STAGE_HOME not set"
+        echo >&2 "ERROR: [INTERNAL] CONDA_STAGE_HOME not set"
         return 1
     fi
 
+    ## Import bash utility functions
+    incl="${CONDA_STAGE_HOME}/bin/incl"
+
+    # shellcheck source=incl/asserts.sh
+    source "${incl}/asserts.sh"
+    # shellcheck source=incl/cli.sh
+    source "${incl}/cli.sh"
+    # shellcheck source=incl/conditions.sh
+    source "${incl}/conditions.sh"
+    # shellcheck source=incl/files.sh
+    source "${incl}/files.sh"
+    # shellcheck source=incl/output.sh
+    source "${incl}/output.sh"
+    # shellcheck source=incl/ports.sh
+    source "${incl}/ports.sh"
+    # shellcheck source=incl/system.sh
+    source "${incl}/system.sh"
+
+    debug=${CONDA_STAGE_DEBUG:-false}
+    
+    mdebug "conda-stage() ..."
+    
     tf_res=$(mktemp)
     tf_log=$(mktemp)
 
@@ -29,20 +49,21 @@ function conda-stage() {
         rm -f "$tf_res" "$tf_log"
         return "$exit_code"
     elif [[ ! -f "$tf_log" ]]; then
-        echo >&2 "INTERNAL ERROR: Failed to infer conda-stage log"
+        (merror "[INTERNAL] Failed to infer conda-stage log")
         rm -f "$tf_res"
         return 2
     elif [[ ! -f "$tf_res" ]]; then
-        echo >&2 "INTERNAL ERROR: Failed to infer conda-stage path"
+        (merror "[INTERNAL] Failed to infer conda-stage path")
         rm -f "$tf_log"
         return 2
     fi
 
     ## Parse log file
     action=$(grep -E "^action:" "$tf_log" | sed -E 's/^action:[[:space:]]*//')
+    mdebug "action='${action}'"
     rm "${tf_log}"
     if [[ -z "$action" ]]; then
-        echo >&2 "INTERNAL ERROR: Failed to infer conda-stage action"
+        (merror "[INTERNAL] Failed to infer conda-stage action")
         rm -f "$tf_res"
         return 2
     fi
@@ -51,31 +72,34 @@ function conda-stage() {
         cmd=$(cat "$tf_res")
         rm "${tf_res}"
         if [[ -z $cmd ]]; then
-            echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Empty result."
+            (merror "[INTERNAL] Failed to infer conda-stage 'activate' file. Empty result")
             return 2
         fi
 
-        if $debug; then
-            echo >&2 "DEBUG: cmd=${cmd}"
-        fi
+        mdebug "cmd='${cmd}'"
 
         ## WORKAROUND: This will make the PS1 prompt for the original
         ## conda environment be correct when unstaging. /HB 2022-04-13
         if [[ $action == "unstage" ]]; then
             conda deactivate
+            exit_code=$?
         fi
         
         eval "$cmd"
+        exit_code=$?
         
         ## WORKAROUND: This will make the PS1 prompt for the staged
         ## conda environment be correct when staging. /HB 2022-04-13
         if [[ $action == "stage" ]]; then
             eval "$cmd"
+            exit_code=$?
         fi
     else
         ## For all other actions, echo the captured standard output
         cat "${tf_res}"
         rm "${tf_res}"
-        return "$exit_code"
     fi
+    
+    mdebug "conda-stage() ... done (exit_code=$exit_code)"
+    return "$exit_code"
 }
