@@ -147,7 +147,7 @@ function conda_pack {
     ## Install conda-pack?
     if ! command -v conda-pack &> /dev/null; then
         t0=$SECONDS
-        minfo "Installing conda-pack ..."
+        minfo "[ONCE] Installing conda-pack, because it was missing ..."
         opts=("--yes")
         if ! $verbose; then
             opts+=("--quiet")
@@ -185,7 +185,7 @@ function conda_pack {
     ## Create conda-pack file?
     if [[ ! -f "${file}" ]]; then
         t0=$SECONDS
-        minfo "Packaging Conda environment ..."
+        minfo "[ONCE] Packaging Conda environment, because it hasn't been done before ..."
         opts=()
         if ! $verbose; then
             opts+=("--quiet")
