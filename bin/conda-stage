@@ -42,7 +42,7 @@
 ###  conda-stage --auto-stage=enable --read-only
 ###  conda-stage --auto-stage=disable
 ###
-### Version: 0.3.0-9002
+### Version: 0.3.0-9003
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -366,8 +366,12 @@ if [[ "${action}" == "autostage" ]]; then
         fi    
         cat > "${file}.tmp" << EOF
 if [[ \${CONDA_STAGE_ACTION} != "unstage" ]]; then
-    command -v conda-stage > /dev/null || module load CBI conda-stage
-    conda-stage ${opts[*]}
+    if command -v conda-stage > /dev/null; then
+        >&2 echo "Auto staging conda environment '\${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
+        conda-stage ${opts[*]}
+    else
+        >&2 echo "WARNING: Cannot auto stage conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
+    fi
 fi
 EOF
         mv "${file}.tmp" "${file}"
