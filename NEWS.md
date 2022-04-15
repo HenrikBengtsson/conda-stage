@@ -1,8 +1,12 @@
 # conda-stage
 
-## Version 0.4.1-9001 [2022-04-15]
+## Version 0.4.1-9002 [2022-04-15]
 
 New Features:
+
+* Add `conda-stage --auto-unstage=enable` to automatically unstage a
+  _staged_ Conda environment when deactivated.  To undo, call
+  `conda-stage --auto-unstage=disable`.
 
 * Now `conda-stage --auto-stage=enable` removes the previously cached
   'conda-pack' tarball, if it exists.
@@ -72,7 +76,7 @@ Bug Fixes:
 New Features:
 
 * When used by Conda, the command-line prompt is now the name of the
-  original conda environment suffixed by an asterisk, e.g. `(myenv*)`.
+  original Conda environment suffixed by an asterisk, e.g. `(myenv*)`.
 
 
 ## Version 0.1.1 [2022-04-13]

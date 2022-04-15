@@ -5,21 +5,23 @@
 ###  conda-stage [options]
 ### 
 ### Options:  
-###  --help              Display the full help page with examples
-###  --version           Output version of this software
-###  --debug             Output detailed debug information
-###  --verbose           Output informative message
-###  --quiet             Silence all output
-###  --force             Force an action, e.g. repacking environment
-###  --full              Output more information
-###  --source            Generate conda-stage() shell function
-###  --read-only         Make the staged environment read-only
-###  --pack              Package up a conda environment
-###  --unstage           Unstage and remove staged environment
-###  --auto-stage=<cmd>  'enable' or 'disable' automatic staging when
-###                      activating the original conda environment
-###  --path=<path>       Directory where conda environment should be
-###                      staged (Default: `mktemp -d`)
+###  --help                Display the full help page with examples
+###  --version             Output version of this software
+###  --debug               Output detailed debug information
+###  --verbose             Output informative message
+###  --quiet               Silence all output
+###  --force               Force an action, e.g. repacking environment
+###  --full                Output more information
+###  --source              Generate conda-stage() shell function
+###  --read-only           Make the staged environment read-only
+###  --pack                Package up a Conda environment
+###  --unstage             Unstage and remove staged environment
+###  --auto-stage=<cmd>    'enable' or 'disable' automatic staging when
+###                        activating the original Conda environment
+###  --auto-unstage=<cmd>  'enable' or 'disable' automatic unstaging when
+###                        deactivating the staged Conda environment
+###  --path=<path>         Directory where Conda environment should be
+###                        staged (Default: `mktemp -d`)
 ### ---
 ###
 ### Example:
@@ -39,10 +41,14 @@
 ###  source "${stage_path}/bin/activate"
 ###
 ###  conda-stage --pack --force
+###
 ###  conda-stage --auto-stage=enable --read-only
 ###  conda-stage --auto-stage=disable
 ###
-### Version: 0.4.1-9001
+###  conda-stage
+###  conda-stage --auto-destage=enable
+###
+### Version: 0.4.1-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -109,7 +115,7 @@ function conda_pack_cache_file {
 
 function assert_active_conda_environment {
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
-        merror "No active conda environment, e.g. 'conda activate <name>'"
+        merror "No active Conda environment, e.g. 'conda activate <name>'"
     fi
 }
 
@@ -121,7 +127,7 @@ function conda_pack {
     local dt
     
     assert_active_conda_environment
-    mdebug "- Current conda environment: ${CONDA_DEFAULT_ENV}"
+    mdebug "- Current Conda environment: ${CONDA_DEFAULT_ENV}"
 
     ## Assert that environment is not already staged
     if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
@@ -172,7 +178,7 @@ function conda_pack {
     ## Create conda-pack file?
     if [[ ! -f "${file}" ]]; then
         t0=$SECONDS
-        minfo "Packaging conda environment ..."
+        minfo "Packaging Conda environment ..."
         opts=()
         if ! $verbose; then
             opts+=("--quiet")
@@ -194,7 +200,7 @@ function conda_pack {
         dt=$((SECONDS - t0))
         minfo "Total 'conda-pack' time: ${dt} seconds"
     fi
-    mdebug "- Packaged conda environment: $(file_info "${file}")"
+    mdebug "- Packaged Conda environment: $(file_info "${file}")"
     assert_file_exists "${file}"
     
     echo "${file}"
@@ -218,6 +224,7 @@ full=false
 path=${CONDA_STAGE_PATH}
 readonly=false
 autostage=false
+autounstage=false
 
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
@@ -263,7 +270,16 @@ while [[ $# -gt 0 ]]; do
             elif [[ ${value} == "disable" ]]; then
                 autostage=false
             else
-                merror "Unknown value of option '--auto-stage=${value}'"
+                merror "Unknown value of option '--${key}=${value}'"
+            fi
+        elif [[ "${key}" == "auto-unstage" ]]; then
+            action=autounstage
+            if [[ ${value} == "enable" ]]; then
+                autounstage=true
+            elif [[ ${value} == "disable" ]]; then
+                autounstage=false
+            else
+                merror "Unknown value of option '--${key}=${value}'"
             fi
         else
             merror "Unknown option: $1"
@@ -324,7 +340,7 @@ if [[ "${action}" == "source" ]]; then
 fi
 
 if [[ "${action}" == "pack" ]]; then
-    minfo "Package current conda environment (${CONDA_PREFIX}) to cache ..."
+    minfo "Package current Conda environment (${CONDA_PREFIX}) to cache ..."
     mdebug "- Using conda-stage $(version)"
 
     ## Already done?
@@ -344,7 +360,7 @@ if [[ "${action}" == "pack" ]]; then
 fi
 
 if [[ "${action}" == "autostage" ]]; then
-    minfo "Configuring automatic staging of original conda environment  ..."
+    minfo "Configuring automatic staging of original Conda environment  ..."
     assert_active_conda_environment
 
     if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
@@ -370,7 +386,7 @@ if [[ "${action}" == "autostage" ]]; then
 [[ -n \${CONDA_STAGE_ACTION} ]] && return 0
 [[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "\${CONDA_PREFIX}/etc/conda/deactivate.d/000.conda-stage-auto.sh ..."
+[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ..."
 
 if command -v conda-stage > /dev/null; then
     [[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
@@ -379,7 +395,7 @@ else
     >&2 echo "WARNING: Cannot auto-stage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
 fi
 
-[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "\${CONDA_PREFIX}/etc/conda/deactivate.d/000.conda-stage-auto.sh ... done"
+[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ... done"
 EOF
         assert_file_exists "${file}"
         mdebug "${file}: $(echo; cat "${file}")"
@@ -388,9 +404,9 @@ EOF
         if $debug; then
             cat > "${file}" << EOF
 [[ \${CONDA_STAGE_QUIET} == "true" ]] && return 0
->&2 echo "\${CONDA_PREFIX}/etc/conda/deactivate.d/zzz.sh ..."
+>&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
->&2 echo "\${CONDA_PREFIX}/etc/conda/deactivate.d/zzz.sh ... done"
+>&2 echo "${file} ... done"
 EOF
             assert_file_exists "${file}"
             mdebug "${file}: $(echo; cat "${file}")"
@@ -400,13 +416,13 @@ EOF
                 [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
             fi
         fi
-        minfo "Enabled auto staging"
+        minfo "Enabled auto-staging"
     else
         if [[ -f "${file}" ]]; then
             rm "${file}"
             [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
         fi
-        minfo "Disabled auto staging"
+        minfo "Disabled auto-staging"
     fi
 
     file=$(conda_pack_cache_file)
@@ -414,13 +430,78 @@ EOF
         rm "${file}"
         [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
     fi
-    minfo "Removed outdated conda-pack tarball"
+    minfo "Removed outdated 'conda-pack' tarball"
     
     exit 0
 fi
 
+
+if [[ "${action}" == "autounstage" ]]; then
+    minfo "Configuring automatic unstaging of staged Conda environment  ..."
+    assert_active_conda_environment
+
+    if [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+        merror "Cannot configure auto-unstaging of a non-staged environment. Call 'conda-stage' first"
+    fi
+    
+    mdebug "- autounstage=${autounstage}"
+
+    path=${CONDA_PREFIX}/etc/conda/deactivate.d
+    mdebug "- path=${path}"
+    file=${path}/zzz.conda-stage-auto.sh
+    mdebug "- file=${file}"
+
+    if $autounstage; then
+        make_dir "${path}"
+
+        cat > "${file}" << EOF
+[[ \${CONDA_STAGE_ACTION} == "void" ]] && return 0
+
+[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ..."
+
+if command -v conda-stage > /dev/null; then
+    [[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "Auto-unstaging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-unstage=disable' before 'conda deactivate'"
+    conda-stage --unstage
+else
+    >&2 echo "WARNING: Cannot auto-unstage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
+fi
+
+[[ \${CONDA_STAGE_QUIET} == "true" ]] || >&2 echo "${file} ... done"
+EOF
+        assert_file_exists "${file}"
+        mdebug "${file}: $(echo; cat "${file}")"
+
+        file=${path}/000.conda-stage-auto.sh
+        if $debug; then
+            cat > "${file}" << EOF
+[[ \${CONDA_STAGE_QUIET} == "true" ]] && return 0
+>&2 echo "${file} ..."
+env | grep -E "(CONDA)" | sort >&2
+>&2 echo "${file} ... done"
+EOF
+            assert_file_exists "${file}"
+            mdebug "${file}: $(echo; cat "${file}")"
+        else
+            if [[ -f "${file}" ]]; then
+                rm "${file}"
+                [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
+            fi
+        fi
+        minfo "Enabled auto-unstaging"
+    else
+        if [[ -f "${file}" ]]; then
+            rm "${file}"
+            [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
+        fi
+        minfo "Disabled auto-unstaging"
+    fi
+
+    exit 0
+fi
+
+
 if [[ "${action}" == "unstage" ]]; then
-    minfo "Unstaging and reverting to original conda environment  ..."
+    minfo "Unstaging and reverting to original Conda environment  ..."
     ## Assert that we are working with a staged environment
     if [[ -z ${CONDA_PREFIX} ]]; then
         merror "Does not look like a staged environment: CONDA_PREFIX is not set"
@@ -431,10 +512,10 @@ if [[ "${action}" == "unstage" ]]; then
         merror "Does not look like a staged environment: No '${CONDA_PREFIX}/.conda-stage' file found"
     fi
 
-    mdebug "- Staged conda environment: ${CONDA_PREFIX}"
+    mdebug "- Staged Conda environment: ${CONDA_PREFIX}"
 
     original=$(cat "${CONDA_PREFIX}/.conda-stage")
-    minfo "Original conda environment: ${original}"
+    minfo "Original Conda environment: ${original}"
 
     t0=$SECONDS
     minfo "Removing all staged files: ${CONDA_PREFIX}"
@@ -445,10 +526,10 @@ if [[ "${action}" == "unstage" ]]; then
     rm -rf "${CONDA_PREFIX}.tmp"
 
     cmd="CONDA_STAGE_ACTION=unstage conda activate \"${original}\""
-    mdebug "Command to activate original conda environment: $cmd"
+    mdebug "Command to activate original Conda environment: $cmd"
     echo "$cmd"
 
-    minfo "Activating original conda environment: ${original}"
+    minfo "Activating original Conda environment: ${original}"
 
     dt=$((SECONDS - t0))
     minfo "Total unstage time: ${dt} seconds"
@@ -457,7 +538,7 @@ if [[ "${action}" == "unstage" ]]; then
 fi
 
 if [[ "${action}" == "stage" ]]; then
-    minfo "Staging current conda environment (${CONDA_PREFIX}) to local disk ..."
+    minfo "Staging current Conda environment (${CONDA_PREFIX}) to local disk ..."
     mdebug "- Using conda-stage $(version)"
 
     conda_env_name=${CONDA_DEFAULT_ENV}    
@@ -489,7 +570,7 @@ if [[ "${action}" == "stage" ]]; then
     dt=$((SECONDS - t0))
     minfo "Total extract time: ${dt} seconds"
 
-    ## Record original conda environment
+    ## Record original Conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
 
     minfo "Activating staged environment"
@@ -510,9 +591,9 @@ if [[ "${action}" == "stage" ]]; then
     fi
 
     cmd="CONDA_STAGE_ACTION=activate conda activate \"${path}\""
-    mdebug "Command to activate staged conda environment: $cmd"
+    mdebug "Command to activate staged Conda environment: $cmd"
     echo "$cmd"
     
-    minfo "Activating staged conda environment: ${path}"
+    minfo "Activating staged Conda environment: ${path}"
     exit 0
 fi
