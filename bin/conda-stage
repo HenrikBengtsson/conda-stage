@@ -42,7 +42,7 @@
 ###  conda-stage --auto-stage=enable --read-only
 ###  conda-stage --auto-stage=disable
 ###
-### Version: 0.4.0-9001
+### Version: 0.4.1
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
