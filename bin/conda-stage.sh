@@ -9,7 +9,10 @@ function conda-stage() {
     local tf_log
     local exit_code
     local cmd
+    local debug
 
+    debug=${CONDA_STAGE_DEBUG:-false}
+    
     if [[ -z "${CONDA_STAGE}" ]]; then
         echo >&2 "INTERNAL ERROR: CONDA_STAGE not set"
         return 1
@@ -50,6 +53,10 @@ function conda-stage() {
         if [[ -z $cmd ]]; then
             echo >&2 "INTERNAL ERROR: Failed to infer conda-stage 'activate' file. Empty result."
             return 2
+        fi
+
+        if $debug; then
+            echo >&2 "DEBUG: cmd=${cmd}"
         fi
 
         ## WORKAROUND: This will make the PS1 prompt for the original

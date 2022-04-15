@@ -201,6 +201,7 @@ function file_info {
 # MAIN
 # =========================================================================
 action=stage
+debug=${CONDA_STAGE_DEBUG:-false}
 dryrun=false
 force=false
 verbose=true
@@ -295,6 +296,7 @@ mdebug "dryrun: ${dryrun}"
 mdebug "force: ${force}"
 mdebug "args: [n=${#args[@]}] ${args[*]}"
 
+CONDA_STAGE_DEBUG=${debug}
 
 if [[ "${action}" == "source" ]]; then
     file="$(dirname "${this}")/conda-stage.sh"
@@ -348,7 +350,7 @@ if [[ "${action}" == "unstage" ]]; then
     chmod -R u+w "${CONDA_PREFIX}.tmp"
     rm -rf "${CONDA_PREFIX}.tmp"
 
-    cmd="conda activate \"${original}\""
+    cmd="CONDA_STAGE_ACTION=unstage conda activate \"${original}\""
     mdebug "Command to activate original conda environment: $cmd"
     echo "$cmd"
 
@@ -412,7 +414,7 @@ if [[ "${action}" == "stage" ]]; then
         chmod -R ugo-w "${path}"
     fi
 
-    cmd="conda activate \"${path}\""
+    cmd="CONDA_STAGE_ACTION=stage conda activate \"${path}\""
     mdebug "Command to activate staged conda environment: $cmd"
     echo "$cmd"
     
