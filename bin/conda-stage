@@ -526,6 +526,7 @@ if [[ "${action}" == "unstage" ]]; then
     rm -rf "${CONDA_PREFIX}.tmp"
 
     cmd="CONDA_STAGE_ACTION=unstage conda activate \"${original}\""
+    cmd="CONDA_STAGE_ACTION=unstage false"
     mdebug "Command to activate original Conda environment: $cmd"
     echo "$cmd"
 
@@ -565,10 +566,20 @@ if [[ "${action}" == "stage" ]]; then
     make_dir "${path}.tmp"
     tar -xf "${conda_pack_cache_file}" -C "${path}.tmp"
     chmod -R u+w "${path}.tmp"
-    remove_dir "${path}"
-    mv "${path}.tmp" "${path}"
     dt=$((SECONDS - t0))
     minfo "Total extract time: ${dt} seconds"
+    
+    ## Disable any conda-stage activate.d/ scripts
+    path_d=${path}.tmp/etc/conda/activate.d
+    minfo "Disable any ${path_d/.tmp}/*.conda-stage-auto.sh scripts"
+    if [[ -d "${path_d}" ]]; then
+        for ff in "${path_d}"/*.conda-stage-auto.sh; do
+            echo "# Disabled in staged Conda environments" > "$ff"
+        done
+    fi
+    
+    remove_dir "${path}"
+    mv "${path}.tmp" "${path}"
 
     ## Record original Conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
