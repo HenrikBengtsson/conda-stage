@@ -81,7 +81,6 @@ $ conda activate myenv
 (myenv) $ conda-stage --auto-stage=disable
 (myenv) $ conda deactivate
 $ unset CONDA_STAGE
-$
 ```
 
 
