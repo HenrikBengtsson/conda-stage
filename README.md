@@ -117,7 +117,7 @@ $ conda-stage --help
 ## Requirements
 
 * **Bash**
-* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda or Anaconda
+* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda (~400 MB disk space) or Anaconda (~3 TB disk space).
 
 All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/), which is a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before that is staged to local disk.
 
