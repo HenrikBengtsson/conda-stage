@@ -82,7 +82,7 @@ function conda-stage() {
 
         ## WORKAROUND: This will make the PS1 prompt for the original
         ## conda environment be correct when unstaging. /HB 2022-04-13
-        if [[ $action == "unstage" ]]; then
+        if false && [[ $action == "unstage" ]]; then
             mdebug "conda deactivate ..."
             conda deactivate
             exit_code=$?
@@ -94,7 +94,7 @@ function conda-stage() {
         
         ## WORKAROUND: This will make the PS1 prompt for the staged
         ## conda environment be correct when staging. /HB 2022-04-13
-        if [[ $action == "stage" ]]; then
+        if false && [[ $action == "stage" ]]; then
             mdebug "$cmd ..."
             eval "$cmd"
             exit_code=$?

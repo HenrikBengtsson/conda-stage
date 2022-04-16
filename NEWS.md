@@ -1,5 +1,29 @@
 # conda-stage
 
+## Version 0.5.0 [2022-04-15]
+
+Significant changes:
+
+* Added `conda-stage --stage` for staging of Conda environment.
+
+* Now `conda-stage` defaults to `conda-stage --help`.
+
+* Now `conda-stage --stage` deactivates the original Conda environment
+  before activating the staged one. Because of this, deactivation of
+  the staged environment will _no longer_ revert back to the original
+  environment.
+
+New Features:
+
+* Add `conda-stage --auto-unstage=enable` to automatically unstage a
+  _staged_ Conda environment when deactivated.  The default value of
+  `--auto-unstage` will be the same as `--auto-stage`, if that is
+  specified.  To undo, call `conda-stage --auto-unstage=disable`.
+
+* Now `conda-stage --auto-stage=enable` removes the previously cached
+  'conda-pack' tarball, if it exists.
+
+
 ## Version 0.4.1 [2022-04-14]
 
 Bug Fixes:
@@ -39,7 +63,7 @@ New Features:
 
 * Now verbose output has timing information for the different steps.
 
-* Now an error is produced if installation of 'conda-pack' failed.
+* Now an error is produced if installation of **conda-pack** failed.
 
 * Now the 'conda-pack' tarball is created atomically by first
   outputting to a `.tmp.*.tar.gz` file, which is renamed to `*.tar.gz`
@@ -64,7 +88,7 @@ Bug Fixes:
 New Features:
 
 * When used by Conda, the command-line prompt is now the name of the
-  original conda environment suffixed by an asterisk, e.g. `(myenv*)`.
+  original Conda environment suffixed by an asterisk, e.g. `(myenv*)`.
 
 
 ## Version 0.1.1 [2022-04-13]
