@@ -67,10 +67,14 @@ function conda-stage() {
         (merror "[INTERNAL] Failed to infer conda-stage action")
         rm -f "$tf_res"
         return 2
+    elif [[ $(wc -w <<< "${action}") -ne 1 ]]; then
+        (merror "[INTERNAL] Unknown conda-stage action [action='${action}']")
+        rm -f "$tf_res"
+        return 2
     fi
 
     CONDA_STAGE_ACTION=${action}
-    mdebug "CONDA_STAGE_ACTION=${CONDA_STAGE_ACTION}"
+    mdebug "CONDA_STAGE_ACTION='${CONDA_STAGE_ACTION}'"
     
     if [[ $action = "stage" ]] || [[ $action = "unstage" ]]; then
         cmd=$(cat "$tf_res")
