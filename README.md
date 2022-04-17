@@ -118,7 +118,7 @@ $ conda-stage --help
 
 * **Bash**
 
-* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda or Anaconda. Commands `conda activate ...` and `conda deactivate` only works in conda (>= 4.6) [2019-01-15].
+* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda (~400 MB disk space) or Anaconda (~3 TB disk space). Commands `conda activate ...` and `conda deactivate` only works in conda (>= 4.6) [2019-01-15].
 
 All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/), which is a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before that is staged to local disk.
 
