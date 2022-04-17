@@ -1,8 +1,12 @@
 # conda-stage
 
-## Version 0.5.0-9000 [2022-04-15]
+## Version 0.5.0-9002 [2022-04-16]
 
-* ...
+Bug Fixes:
+
+* `conda active <env>` on a fresh Conda environment '<env>' configured
+  to be auto-staged and _without_ 'conda-pack' installed, would fail
+  to be staged.
 
 
 ## Version 0.5.0 [2022-04-15]

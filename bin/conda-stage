@@ -54,7 +54,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.5.0-9001
+### Version: 0.5.0-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -159,9 +159,9 @@ function conda_pack {
         ## output, which means we have to redirect everything to /dev/null
         ## if verbose=false.
         if $verbose; then
-            1>&2 conda install "${opts[@]}" --channel=conda-forge conda-pack
+            1>&2 CONDA_STAGE=false conda install "${opts[@]}" --channel=conda-forge conda-pack
         else
-            conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
+            CONDA_STAGE=false conda install "${opts[@]}" --channel=conda-forge conda-pack &> /dev/null
         fi
         dt=$((SECONDS - t0))
         minfo "Total installation time: ${dt} seconds"
@@ -307,7 +307,7 @@ fi
 
 ## Log action to file?
 if [[ -n ${CONDA_STAGE_LOGFILE} ]]; then
-    echo "action: $action" >> "${CONDA_STAGE_LOGFILE}"
+    echo "action: $action" > "${CONDA_STAGE_LOGFILE}"
 fi
 
 ## --help should always be available prior to any validation errors
@@ -434,6 +434,7 @@ EOF
 \${CONDA_STAGE_DEBUG:-false} || return 0
 >&2 echo "${file} ..."
 env | grep -E "(CONDA)" | sort >&2
+command -v conda-stage > /dev/null && conda-stage --version
 >&2 echo "${file} ... done"
 EOF
               assert_file_exists "${file}"
