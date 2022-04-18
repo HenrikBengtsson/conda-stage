@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.5.1-9003 [2022-04-18]
+## Version 0.5.1-9004 [2022-04-18]
 
 Significant Changes:
 
@@ -23,6 +23,8 @@ New Features:
   `pkgs/` folder. Such packages are _not_ staged by **conda-pack**,
   cf. <https://github.com/conda/conda-pack/issues/112>.
 
+* Add option `--ignore-missing-files` which will be passed to
+  `conda-pack` as-is.
 
 ## Version 0.5.1 [2022-04-16]
 
