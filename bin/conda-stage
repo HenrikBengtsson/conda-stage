@@ -5,23 +5,24 @@
 ###  conda-stage [options]
 ### 
 ### Options:  
-###  --help                Display the full help page with examples
-###  --version             Output version of this software
-###  --debug               Output detailed debug information
-###  --verbose             Output informative message
-###  --quiet               Silence all output
-###  --force               Force an action, e.g. repacking environment
-###  --source              Generate conda-stage() shell function
-###  --read-only           Make the staged environment read-only
-###  --auto-stage=<cmd>    'enable' or 'disable' automatic staging when
-###                        activating the original Conda environment
-###  --auto-unstage=<cmd>  'enable' or 'disable' automatic unstaging when
-###                        deactivating the staged Conda environment
-###  --path=<path>         Directory where Conda environment should be
-###                        staged (Default: `mktemp -d`)
-###  --pack                Package up a Conda environment
-###  --stage               Stage an Conda environment
-###  --unstage             Unstage and remove staged environment
+###  --help                  Display the full help page with examples
+###  --version               Output version of this software
+###  --debug                 Output detailed debug information
+###  --verbose               Output informative message
+###  --quiet                 Silence all output
+###  --force                 Force an action, e.g. repacking environment
+###  --source                Generate conda-stage() shell function
+###  --ignore-missing-files  Passed to 'conda-pack' as-is
+###  --writable              Make the staged environment writable
+###  --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
+###                          activating the original Conda environment
+###  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
+###                          deactivating the staged Conda environment
+###  --path=<path>           Directory where Conda environment should be
+###                          staged (Default: `mktemp -d`)
+###  --pack                  Package up a Conda environment
+###  --stage                 Stage an Conda environment
+###  --unstage               Unstage and remove staged environment
 ### ---
 ###
 ### Examples:
@@ -31,7 +32,7 @@
 ###  conda-stage --version --full
 ###
 ###  ## Enable auto-staging
-###  conda-stage --auto-stage=enable --read-only
+###  conda-stage --auto-stage=enable
 ###  conda activate myenv
 ###  conda deactivate
 ###
@@ -54,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.5.1
+### Version: 0.6.0
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -185,10 +186,6 @@ function conda_pack {
     if [[ ! -f "${file}" ]]; then
         t0=$SECONDS
         minfo "[ONCE] Packaging Conda environment, because it hasn't been done before ..."
-        opts=()
-        if ! $verbose; then
-            opts+=("--quiet")
-        fi
         mdebug "Additional 'conda-pack' options: ${opts[*]}"
         ## ROBUSTNESS: Have 'conda-pack' produce the tarball atomically by
         ## writing to a temporary file which is renamed on success.  Since
@@ -200,7 +197,7 @@ function conda_pack {
         ## WORKAROUND: conda-pack outputs "progress" to stdout, not stderr
         ## (https://github.com/conda/conda-pack/issues/217). Because of this,
         ## we direct stdout to stderr here.
-        1>&2 conda-pack "${opts[@]}" --output="${tmp_tarball}"
+        1>&2 conda-pack "${conda_pack_opts[@]}" --output="${tmp_tarball}"
         mv "${tmp_tarball}" "${file}"
 
         dt=$((SECONDS - t0))
@@ -223,13 +220,13 @@ function file_info {
 action=
 debug=${CONDA_STAGE_DEBUG:-false}
 force=false
-verbose=true
-args=()
+verbose=${CONDA_STAGE_VERBOSE:-true}
 full=false
 path=${CONDA_STAGE_PATH}
-readonly=false
+writable=${CONDA_STAGE_WRITABLE:-false}
 autostage=
 autounstage=
+conda_pack_opts=()
 
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
@@ -240,22 +237,27 @@ while [[ $# -gt 0 ]]; do
         full=true
     elif [[ "$1" == "--version" ]]; then
         action=version
+    elif [[ "$1" == "--full" ]]; then
+        full=true
     elif [[ "$1" == "--debug" ]]; then
         debug=true
     elif [[ "$1" == "--quiet" ]]; then
         verbose=false
+        conda_pack_opts+=("$1")
     elif [[ "$1" == "--force" ]]; then
         force=true
     elif [[ "$1" == "--source" ]]; then
         action=source
-    elif [[ "$1" == "--read-only" ]]; then
-        readonly=true
+    elif [[ "$1" == "--writable" ]]; then
+        writable=true
     elif [[ "$1" == "--stage" ]]; then
         action=stage
     elif [[ "$1" == "--unstage" ]]; then
         action=unstage
     elif [[ "$1" == "--pack" ]]; then
         action=pack
+    elif [[ "$1" == "--ignore-missing-files" ]]; then
+        conda_pack_opts+=("$1")
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -293,8 +295,7 @@ while [[ $# -gt 0 ]]; do
             merror "Unknown option: $1"
         fi
     else
-        ## Additional options to be appended (rarely needed)
-        args+=("$1")
+        merror "Unknown option: $1"
     fi
     shift
 done
@@ -341,7 +342,12 @@ mdebug "action: ${action}"
 mdebug "debug: ${debug}"
 mdebug "verbose: ${verbose}"
 mdebug "force: ${force}"
-mdebug "args: [n=${#args[@]}] ${args[*]}"
+mdebug "conda_pack_opts: [n=${#conda_pack_opts[@]}] ${conda_pack_opts[*]}"
+mdebug "full: ${full}"
+mdebug "path: ${path}"
+mdebug "writable: ${writable}"
+mdebug "autostage: ${autostage}"
+mdebug "autounstage: ${autounstage}"
 
 CONDA_STAGE_DEBUG=${debug}
 
@@ -382,7 +388,13 @@ if [[ "${action}" == "automate" ]]; then
       fi
       
       mdebug "- autostage=${autostage}"
-  
+
+      ## Warn about pkgs/ in Conda environment
+      ## https://github.com/conda/conda-pack/issues/112
+      if [[ -d "${CONDA_PREFIX}/pkgs/" ]]; then
+          mwarn "Detected a pkgs/ folder *local* to the Conda environment, which is unusal. That folder will *not* be staged to local disk, cf. https://github.com/conda/conda-pack/issues/112: ${CONDA_PREFIX}/pkgs/"
+      fi
+      
       path=${CONDA_PREFIX}/etc/conda/activate.d
       mdebug "- path=${path}"
       
@@ -392,10 +404,10 @@ if [[ "${action}" == "automate" ]]; then
       mdebug "- file=${file}"
   
       if [[ "${autostage}" == "enable" ]]; then
-          mdebug "- readonly=${readonly}"
+          mdebug "- writable=${writable}"
           opts=()
-          if $readonly; then
-              opts+=("--read-only")
+          if $writable; then
+              opts+=("--writable")
           fi
           make_dir "${path}"
   
@@ -414,7 +426,7 @@ fi
 
 if command -v conda-stage > /dev/null; then
     \${CONDA_STAGE_DEBUG:-false} && >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
-    conda-stage --stage ${opts[*]}
+    conda-stage --stage ${opts[*]} ${conda_pack_opts[*]}
     export CONDA_STAGE_AUTOSTAGED=true
 else
     >&2 echo "WARNING: Cannot auto-stage Conda environment '\${CONDA_DEFAULT_ENV}', because 'conda-stage' not found"
@@ -590,6 +602,12 @@ if [[ "${action}" == "stage" ]]; then
         exit "$exit_code"
     fi
 
+    ## Warn about pkgs/ in Conda environment
+    ## https://github.com/conda/conda-pack/issues/112
+    if [[ -d "${CONDA_PREFIX}/pkgs/" ]]; then
+          mwarn "Detected a pkgs/ folder *local* to the Conda environment, which is unusal. That folder will *not* be staged to local disk, cf. https://github.com/conda/conda-pack/issues/112: ${CONDA_PREFIX}/pkgs/"
+    fi
+    
     if [[ -z $path ]]; then
         path=$(mktemp --directory --tmpdir="${TMPDIR}" conda-stage-XXXX)
         path=${path}/${conda_env_name}
@@ -648,8 +666,8 @@ if [[ "${action}" == "stage" ]]; then
     ## Set the conda prompt used by PS1 prompt (optional)
     conda config --env --set env_prompt "(${conda_env_name}*) "
     
-    if $readonly; then
-        minfo "Make staged environment read-only"
+    if ! $writable; then
+        minfo "Making staged environment read-only (use --writable to disable)"
         chmod -R ugo-w "${path}"
     fi
 
