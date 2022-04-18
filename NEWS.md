@@ -14,6 +14,10 @@ New Features:
   be set when configuring the environment or when manually staging
   it. It cannot be done on an already staged environment.
 
+* Using `--quiet` with `--auto-stage=enable` will now make sure
+  automatic staging during activation on the environment will be
+  completely silent.
+
 
 ## Version 0.5.1 [2022-04-16]
 

@@ -54,7 +54,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.5.1-9001
+### Version: 0.5.1-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -223,11 +223,11 @@ function file_info {
 action=
 debug=${CONDA_STAGE_DEBUG:-false}
 force=false
-verbose=true
+verbose=${CONDA_STAGE_VERBOSE:-true}
 args=()
 full=false
 path=${CONDA_STAGE_PATH}
-writable=false
+writable=${CONDA_STAGE_WRITABLE:-false}
 autostage=
 autounstage=
 
@@ -399,6 +399,9 @@ if [[ "${action}" == "automate" ]]; then
       if [[ "${autostage}" == "enable" ]]; then
           mdebug "- writable=${writable}"
           opts=()
+          if ! $verbose; then
+              opts+=("--quiet")
+          fi
           if $writable; then
               opts+=("--writable")
           fi
