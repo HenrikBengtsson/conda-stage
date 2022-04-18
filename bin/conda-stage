@@ -237,6 +237,8 @@ while [[ $# -gt 0 ]]; do
         full=true
     elif [[ "$1" == "--version" ]]; then
         action=version
+    elif [[ "$1" == "--full" ]]; then
+        full=true
     elif [[ "$1" == "--debug" ]]; then
         debug=true
     elif [[ "$1" == "--quiet" ]]; then
@@ -293,7 +295,7 @@ while [[ $# -gt 0 ]]; do
             merror "Unknown option: $1"
         fi
     else
-        merro "Unknown option: $1"
+        merror "Unknown option: $1"
     fi
     shift
 done
@@ -665,7 +667,7 @@ if [[ "${action}" == "stage" ]]; then
     conda config --env --set env_prompt "(${conda_env_name}*) "
     
     if ! $writable; then
-        minfo "Make staged environment read-only (use --writable to disable)"
+        minfo "Making staged environment read-only (use --writable to disable)"
         chmod -R ugo-w "${path}"
     fi
 
