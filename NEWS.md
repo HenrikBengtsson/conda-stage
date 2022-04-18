@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.5.1-9001 [2022-04-18]
+## Version 0.5.1-9003 [2022-04-18]
 
 Significant Changes:
 
@@ -17,6 +17,11 @@ New Features:
 * Using `--quiet` with `--auto-stage=enable` will now make sure
   automatic staging during activation on the environment will be
   completely silent.
+
+* An informative warning is now generated during staging if it is
+  detected that the Conda environment has packages installed in its
+  `pkgs/` folder. Such packages are _not_ staged by **conda-pack**,
+  cf. <https://github.com/conda/conda-pack/issues/112>.
 
 
 ## Version 0.5.1 [2022-04-16]
