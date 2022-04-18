@@ -12,7 +12,7 @@
 ###  --quiet               Silence all output
 ###  --force               Force an action, e.g. repacking environment
 ###  --source              Generate conda-stage() shell function
-###  --read-only           Make the staged environment read-only
+###  --writable            Make the staged environment writable
 ###  --auto-stage=<cmd>    'enable' or 'disable' automatic staging when
 ###                        activating the original Conda environment
 ###  --auto-unstage=<cmd>  'enable' or 'disable' automatic unstaging when
@@ -31,7 +31,7 @@
 ###  conda-stage --version --full
 ###
 ###  ## Enable auto-staging
-###  conda-stage --auto-stage=enable --read-only
+###  conda-stage --auto-stage=enable
 ###  conda activate myenv
 ###  conda deactivate
 ###
@@ -54,7 +54,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.5.1-9000
+### Version: 0.5.1-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -227,7 +227,7 @@ verbose=true
 args=()
 full=false
 path=${CONDA_STAGE_PATH}
-readonly=false
+writable=false
 autostage=
 autounstage=
 
@@ -248,8 +248,8 @@ while [[ $# -gt 0 ]]; do
         force=true
     elif [[ "$1" == "--source" ]]; then
         action=source
-    elif [[ "$1" == "--read-only" ]]; then
-        readonly=true
+    elif [[ "$1" == "--writable" ]]; then
+        writable=true
     elif [[ "$1" == "--stage" ]]; then
         action=stage
     elif [[ "$1" == "--unstage" ]]; then
@@ -342,6 +342,11 @@ mdebug "debug: ${debug}"
 mdebug "verbose: ${verbose}"
 mdebug "force: ${force}"
 mdebug "args: [n=${#args[@]}] ${args[*]}"
+mdebug "full: ${full}"
+mdebug "path: ${path}"
+mdebug "writable: ${writable}"
+mdebug "autostage: ${autostage}"
+mdebug "autounstage: ${autounstage}"
 
 CONDA_STAGE_DEBUG=${debug}
 
@@ -392,10 +397,10 @@ if [[ "${action}" == "automate" ]]; then
       mdebug "- file=${file}"
   
       if [[ "${autostage}" == "enable" ]]; then
-          mdebug "- readonly=${readonly}"
+          mdebug "- writable=${writable}"
           opts=()
-          if $readonly; then
-              opts+=("--read-only")
+          if $writable; then
+              opts+=("--writable")
           fi
           make_dir "${path}"
   
@@ -648,8 +653,8 @@ if [[ "${action}" == "stage" ]]; then
     ## Set the conda prompt used by PS1 prompt (optional)
     conda config --env --set env_prompt "(${conda_env_name}*) "
     
-    if $readonly; then
-        minfo "Make staged environment read-only"
+    if ! $writable; then
+        minfo "Make staged environment read-only (use --writable to disable)"
         chmod -R ugo-w "${path}"
     fi
 

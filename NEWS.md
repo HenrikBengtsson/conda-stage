@@ -1,8 +1,18 @@
 # conda-stage
 
-## Version 0.5.1-9000 [2022-04-17]
+## Version 0.5.1-9001 [2022-04-18]
 
-* ...
+Significant Changes:
+
+* Staged Conda environment are now read-only by default. This was done
+  to make it more clear that packages updates and installs should be
+  done toward the original, non-staged environment.
+
+New Features:
+
+* Added `--writable` to make a Conda environment writable. This must
+  be set when configuring the environment or when manually staging
+  it. It cannot be done on an already staged environment.
 
 
 ## Version 0.5.1 [2022-04-16]
