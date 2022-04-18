@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.5.1-9004
+### Version: 0.6.0
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
