@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.5.1-9004 [2022-04-18]
+## Version 0.6.0 [2022-04-18]
 
 Significant Changes:
 
