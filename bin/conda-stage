@@ -21,7 +21,7 @@
 ###  --path=<path>           Directory where Conda environment should be
 ###                          staged (Default: `mktemp -d`)
 ###  --pack                  Package up a Conda environment
-###  --stage                 Stage an Conda environment
+###  --stage                 Stage a Conda environment
 ###  --unstage               Unstage and remove staged environment
 ### ---
 ###
