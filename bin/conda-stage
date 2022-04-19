@@ -656,7 +656,7 @@ if [[ "${action}" == "stage" ]]; then
             mdebug "conda-pack file exists and is up to date: ${file}"
         else
             mdebug "conda-pack file exists, but is out to date: ${file}"
-            minfo "Re-packing out-of-date package tarball ($(file_info "${file}"))"
+            minfo "Removing out-of-date package tarball ($(file_info "${file}"))"
             force=true
         fi
     fi
