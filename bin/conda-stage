@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.0-9001
+### Version: 0.6.0-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -130,15 +130,19 @@ function assert_active_conda_environment {
 
 function is_conda_pack_cache_file_uptodate {
     local file
+    local file_export
     local tf
 
     mdebug "is_conda_pack_cache_file_uptodate() ..."
     
     file=$(conda_pack_cache_file)
+    file_export=${file%.tar.gz}.export
+    mdebug "- conda-pack tarball: ${file}"
+    mdebug "- conda-pack export: ${file_export}"
     if [[ ! -f "${file}" ]]; then
         mdebug "- conda-pack tarball not up-to-date, because it's missing"
         return 1
-    elif [[ ! -f "${file}.export" ]]; then
+    elif [[ ! -f "${file_export}" ]]; then
         mdebug "- conda-pack tarball not up-to-date, because it's \"export\" file missing"
         return 1
     else
@@ -147,7 +151,7 @@ function is_conda_pack_cache_file_uptodate {
         
         tf=$(mktemp)
         conda list --export > "${tf}"
-        if ! cmp --silent "${file}.export" "${tf}"; then
+        if ! cmp --silent "${file_export}" "${tf}"; then
             mdebug "- conda-pack tarball not up-to-date, because it's \"export\" does not match 'conda list --export'"
             rm "${tf}"
             return 1
@@ -165,6 +169,7 @@ function is_conda_pack_cache_file_uptodate {
 function conda_pack {
     local opts
     local file
+    local file_export
     local tmp_tarball
     local t0
     local dt
@@ -211,6 +216,9 @@ function conda_pack {
     mdebug "- Using conda-pack $(conda_pack_version)"
 
     file=$(conda_pack_cache_file)
+    file_export=${file%.tar.gz}.export
+    mdebug "- conda-pack tarball: ${file}"
+    mdebug "- conda-pack export: ${file_export}"
 
     ## Skip existing conda-pack file?
     if $force && [[ -f "${file}" ]]; then
@@ -235,7 +243,7 @@ function conda_pack {
         ## we direct stdout to stderr here.
         1>&2 conda-pack "${conda_pack_opts[@]}" --output="${tmp_tarball}"
 
-        conda list --export > "${file}.export"
+        conda list --export > "${file_export}"
         
         mv "${tmp_tarball}" "${file}"
         
@@ -409,7 +417,7 @@ if [[ "${action}" == "pack" ]]; then
             merror "Package tarball already exists. Use --force to recreate: ${file}"
         else
             mdebug "conda-pack file exists, but is out to date: ${file}"
-            minfo "Re-packing out-of-date package tarball ($(file_info "${file}"))"
+            minfo "Removing out-of-date package tarball ($(file_info "${file}"))"
             force=true
         fi
     fi
