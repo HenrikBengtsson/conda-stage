@@ -1,8 +1,11 @@
 # conda-stage
 
-## Version 0.6.0-9000 [2022-04-18]
+## Version 0.6.0-9001 [2022-04-18]
 
-* ...
+New Features:
+
+* Now `conda-stage` detects if the cached 'conda-pack' tarball is out
+  of date and re-packs it if needed.
 
 
 ## Version 0.6.0 [2022-04-18]

@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.0-9000
+### Version: 0.6.0-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -120,11 +120,47 @@ function conda_pack_cache_file {
     echo "${path}/${CONDA_DEFAULT_ENV}.tar.gz"
 }
 
+
 function assert_active_conda_environment {
     if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
         merror "No active Conda environment, e.g. 'conda activate <name>'"
     fi
 }
+
+
+function is_conda_pack_cache_file_uptodate {
+    local file
+    local tf
+
+    mdebug "is_conda_pack_cache_file_uptodate() ..."
+    
+    file=$(conda_pack_cache_file)
+    if [[ ! -f "${file}" ]]; then
+        mdebug "- conda-pack tarball not up-to-date, because it's missing"
+        return 1
+    elif [[ ! -f "${file}.export" ]]; then
+        mdebug "- conda-pack tarball not up-to-date, because it's \"export\" file missing"
+        return 1
+    else
+        assert_active_conda_environment
+        mdebug "- Current Conda environment: ${CONDA_DEFAULT_ENV}"
+        
+        tf=$(mktemp)
+        conda list --export > "${tf}"
+        if ! cmp --silent "${file}.export" "${tf}"; then
+            mdebug "- conda-pack tarball not up-to-date, because it's \"export\" does not match 'conda list --export'"
+            rm "${tf}"
+            return 1
+        else
+            rm "${tf}"
+        fi
+    fi
+
+    mdebug "- conda-pack tarball is up-to-date"
+
+    return 0
+}
+
 
 function conda_pack {
     local opts
@@ -198,8 +234,11 @@ function conda_pack {
         ## (https://github.com/conda/conda-pack/issues/217). Because of this,
         ## we direct stdout to stderr here.
         1>&2 conda-pack "${conda_pack_opts[@]}" --output="${tmp_tarball}"
-        mv "${tmp_tarball}" "${file}"
 
+        conda list --export > "${file}.export"
+        
+        mv "${tmp_tarball}" "${file}"
+        
         dt=$((SECONDS - t0))
         minfo "Total 'conda-pack' time: ${dt} seconds"
     fi
@@ -365,9 +404,16 @@ if [[ "${action}" == "pack" ]]; then
     ## Already done?
     file=$(conda_pack_cache_file)
     if ! $force && [[ -f "${file}" ]]; then
-        merror "Package tarball already exists. Use --force to recreate: ${file}"
+        if is_conda_pack_cache_file_uptodate; then
+            mdebug "conda-pack file exists and is up to date: ${file}"
+            merror "Package tarball already exists. Use --force to recreate: ${file}"
+        else
+            mdebug "conda-pack file exists, but is out to date: ${file}"
+            minfo "Re-packing out-of-date package tarball ($(file_info "${file}"))"
+            force=true
+        fi
     fi
-
+    
     conda_pack_cache_file=$(conda_pack)
     exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
@@ -595,6 +641,18 @@ if [[ "${action}" == "stage" ]]; then
     minfo "Staging current Conda environment (${CONDA_PREFIX}) to local disk ..."
     mdebug "- Using conda-stage $(version)"
 
+    ## Already done?
+    file=$(conda_pack_cache_file)
+    if ! $force && [[ -f "${file}" ]]; then
+        if is_conda_pack_cache_file_uptodate; then
+            mdebug "conda-pack file exists and is up to date: ${file}"
+        else
+            mdebug "conda-pack file exists, but is out to date: ${file}"
+            minfo "Re-packing out-of-date package tarball ($(file_info "${file}"))"
+            force=true
+        fi
+    fi
+    
     conda_env_name=${CONDA_DEFAULT_ENV}    
     conda_pack_cache_file=$(conda_pack)
     exit_code=$?
