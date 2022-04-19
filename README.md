@@ -114,6 +114,17 @@ $ conda-stage --help
 ```
 
 
+## Known limitations
+
+* An already staged Conda environment cannot be staged, cf.
+
+* `RPATH` (= run-time search path) in binaries are not
+  rewritten/relocated by **conda-pack** by staging,
+  cf. <https://github.com/conda/conda-pack/issues/117>.  This means
+  that those binaries will still access the original files as pointed
+  to by `RPATH`. This will not break anything.
+
+
 ## Requirements
 
 * **Bash**
@@ -134,3 +145,5 @@ $ export PATH
 $ conda-stage --version
 0.6.0
 ```
+
+
