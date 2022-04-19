@@ -1,5 +1,13 @@
 # conda-stage
 
+## Version 0.6.1 [2022-04-19]
+
+New Features:
+
+* Now `conda-stage` detects if the cached 'conda-pack' tarball is out
+  of date and re-packs it if needed.
+
+
 ## Version 0.6.0 [2022-04-18]
 
 Significant Changes:
