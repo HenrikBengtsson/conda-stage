@@ -1,5 +1,15 @@
 # conda-stage
 
+## Version 0.6.2 [2022-04-22]
+
+Miscellaneous:
+
+* Cleanup: `conda-stage --auto-stage=enable` now only adds one file
+  per `activate.d/` and `deactivate.d/` folder of the Conda
+  environment.  Previously, there was a second file used for optional
+  debugging purposes.
+
+
 ## Version 0.6.1 [2022-04-19]
 
 New Features:
