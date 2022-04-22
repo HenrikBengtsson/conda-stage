@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.1-9000
+### Version: 0.6.1-9001
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -469,6 +469,11 @@ if [[ "${action}" == "automate" ]]; then
 ## Disabled?
 \${CONDA_STAGE:-true} || return 0
 
+if \${CONDA_STAGE_DEBUG:-false}; then
+    env | grep -E "(CONDA)" | sort >&2
+    command -v conda-stage > /dev/null && conda-stage --version
+fi
+
 ## Prevent automatic staging after deactivation of staged environment
 if \${CONDA_STAGE_AUTOSTAGED:-false}; then
     unset CONDA_STAGE_AUTOSTAGED
@@ -491,26 +496,6 @@ EOF
           assert_file_exists "${file}"
           mdebug "${file}: $(echo; cat "${file}")"
   
-          file=${path}/000.conda-stage-auto.sh
-          if $debug; then
-              cat > "${file}" << EOF
-## Disabled?
-\${CONDA_STAGE:-true} || return 0
-
-\${CONDA_STAGE_DEBUG:-false} || return 0
->&2 echo "${file} ..."
-env | grep -E "(CONDA)" | sort >&2
-command -v conda-stage > /dev/null && conda-stage --version
->&2 echo "${file} ... done"
-EOF
-              assert_file_exists "${file}"
-              mdebug "${file}: $(echo; cat "${file}")"
-          else
-              if [[ -f "${file}" ]]; then
-                  rm "${file}"
-                  [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
-              fi
-          fi
           minfo "Enabled auto-staging"
       else
           if [[ -f "${file}" ]]; then
@@ -542,6 +527,11 @@ EOF
 ## Disabled?
 \${CONDA_STAGE:-true} || return 0
 
+if \${CONDA_STAGE_DEBUG:-false}; then
+    env | grep -E "(CONDA)" | sort >&2
+    command -v conda-stage > /dev/null && conda-stage --version
+fi
+
 ## Prevent recursive unstaging on deactivation
 if \${CONDA_STAGE_AUTOUNSTAGED:-false}; then
     unset CONDA_STAGE_AUTOUNSTAGED
@@ -567,26 +557,6 @@ fi
 EOF
           assert_file_exists "${file}"
           mdebug "${file}: $(echo; cat "${file}")"
-
-          file=${path}/zzz.conda-stage-auto.sh
-          if $debug; then
-              cat > "${file}" << EOF
-## Disabled?
-\${CONDA_STAGE:-true} || return 0
-
-\${CONDA_STAGE_DEBUG:-false} || return 0
->&2 echo "${file} ..."
-env | grep -E "(CONDA)" | sort >&2
->&2 echo "${file} ... done"
-EOF
-              assert_file_exists "${file}"
-              mdebug "${file}: $(echo; cat "${file}")"
-          else
-              if [[ -f "${file}" ]]; then
-                  rm "${file}"
-                  [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
-              fi
-          fi
           minfo "Enabled auto-unstaging"
       else
           if [[ -f "${file}" ]]; then
