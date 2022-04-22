@@ -1,6 +1,6 @@
 # conda-stage
 
-## Version 0.6.1-9001 [2022-04-22]
+## Version 0.6.2 [2022-04-22]
 
 Miscellaneous:
 
