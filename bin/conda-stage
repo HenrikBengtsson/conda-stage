@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.1-9001
+### Version: 0.6.2
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -626,7 +626,7 @@ if [[ "${action}" == "stage" ]]; then
             mdebug "conda-pack file exists and is up to date: ${file}"
         else
             mdebug "conda-pack file exists, but is out to date: ${file}"
-            minfo "Re-packing out-of-date package tarball ($(file_info "${file}"))"
+            minfo "Removing out-of-date package tarball ($(file_info "${file}"))"
             force=true
         fi
     fi
