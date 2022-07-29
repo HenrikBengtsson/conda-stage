@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.2-9002
+### Version: 0.6.2-9003
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -449,12 +449,6 @@ if [[ "${action}" == "automate" ]]; then
       
       mdebug "- autostage=${autostage}"
 
-      ## Warn about pkgs/ in Conda environment
-      ## https://github.com/conda/conda-pack/issues/112
-      if [[ -d "${CONDA_PREFIX}/pkgs/" ]]; then
-          mwarn "Detected a pkgs/ folder *local* to the Conda environment, which is unusal. That folder will *not* be staged to local disk, cf. <https://github.com/conda/conda-pack/issues/112>: ${CONDA_PREFIX}/pkgs/"
-      fi
-      
       path=${CONDA_PREFIX}/etc/conda/activate.d
       mdebug "- path=${path}"
       
@@ -464,6 +458,12 @@ if [[ "${action}" == "automate" ]]; then
       mdebug "- file=${file}"
   
       if [[ "${autostage}" == "enable" ]]; then
+          ## Warn about pkgs/ in Conda environment
+          ## https://github.com/conda/conda-pack/issues/112
+          if [[ -d "${CONDA_PREFIX}/pkgs/" ]]; then
+              mwarn "Detected a pkgs/ folder *local* to the Conda environment, which is unusal. That folder will *not* be staged to local disk, cf. <https://github.com/conda/conda-pack/issues/112>: ${CONDA_PREFIX}/pkgs/"
+          fi
+      
           mdebug "- writable=${writable}"
           opts=()
           if $writable; then
