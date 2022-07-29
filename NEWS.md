@@ -12,6 +12,16 @@
   environment at a later stage.  It is still possible to manually
   stage, i.e. `conda-stage --stage`.
 
+## New Features
+
+* Add option `--prologue=<commands>` to configure auto-staging to call
+  a set of commands before calling `conda-stage` the first time.  This
+  can be useful when `conda-stage` is not on the `PATH`, but needs to
+  be loaded via an environment module first, e.g. `--prologue="module
+  load conda-stage"`.  To set a default prologue command, use
+  environment variable, e.g. `CONDA_STAGE_PROLOGUE="module load
+  conda-stage"`.
+
 ## Miscellaneous
 
 * Wrap URL in two of the warnings within brackets to avoid the

@@ -18,6 +18,8 @@
 ###                          activating the original Conda environment
 ###  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
 ###                          deactivating the staged Conda environment
+###  --prologue=<commands>   Optional commands to call during autostaging
+###                          before 'conda-stage' is called the first time.
 ###  --path=<path>           Directory where Conda environment should be
 ###                          staged (Default: `mktemp -d`)
 ###  --pack                  Package up a Conda environment
@@ -41,6 +43,12 @@
 ###  conda-stage --auto-stage=disable
 ###  conda deactivate
 ###
+###  ## Auto-stage when 'conda-stage' module needs to be "loaded" first
+###  conda-stage --prologue="module load conda-stage" --auto-stage=enable
+###  ## Set a default --prologue command
+###  export CONDA_STAGE_PROLOGUE="module load conda-stage"
+###  conda-stage --auto-stage=enable
+###
 ###  ## Repack environment after updating or install new software
 ###  conda-stage --pack --force
 ###
@@ -55,7 +63,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.2-9003
+### Version: 0.6.2-9004
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -273,6 +281,7 @@ path=${CONDA_STAGE_PATH}
 writable=${CONDA_STAGE_WRITABLE:-false}
 autostage=
 autounstage=
+prologue=${CONDA_STAGE_PROLOGUE}
 conda_pack_opts=()
 
 # Parse command-line options
@@ -316,6 +325,8 @@ while [[ $# -gt 0 ]]; do
         fi
         if [[ "${key}" == "path" ]]; then
             path=${value}
+        elif [[ "${key}" == "prologue" ]]; then
+            prologue=${value}
         elif [[ "${key}" == "auto-stage" ]]; then
             action=automate
             if [[ ${value} == "enable" ]]; then
@@ -393,6 +404,7 @@ mdebug "conda_pack_opts: [n=${#conda_pack_opts[@]}] ${conda_pack_opts[*]}"
 mdebug "full: ${full}"
 mdebug "path: ${path}"
 mdebug "writable: ${writable}"
+mdebug "prologue: ${prologue}"
 mdebug "autostage: ${autostage}"
 mdebug "autounstage: ${autounstage}"
 
@@ -488,6 +500,8 @@ fi
 [[ -n \${CONDA_STAGE_ACTION} ]] && return 0
 
 \${CONDA_STAGE_DEBUG:-false} && >&2 echo "${file} ..."
+
+${prologue}
 
 if command -v conda-stage > /dev/null; then
     \${CONDA_STAGE_DEBUG:-false} && >&2 echo "Auto-staging Conda environment '${CONDA_DEFAULT_ENV}'. To disable, call 'conda-stage --auto-stage=disable'"
