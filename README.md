@@ -138,12 +138,12 @@ All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.6.2.tar.gz
-$ tar xf 0.6.2.tar.gz
-$ PATH=/path/to/conda-stage-0.6.2/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.7.0.tar.gz
+$ tar xf 0.7.0.tar.gz
+$ PATH=/path/to/conda-stage-0.7.0/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.6.2
+0.7.0
 ```
 
 
