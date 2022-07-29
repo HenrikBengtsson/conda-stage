@@ -1,8 +1,11 @@
 # conda-stage
 
-## Version 0.6.2-9000 [2022-04-22]
+## Version (development version)
 
-* ...
+Miscellaneous:
+
+* Wrap URL in two of the warnings within brackets to avoid the
+  following colon to be part of the URL.
 
 
 ## Version 0.6.2 [2022-04-22]
