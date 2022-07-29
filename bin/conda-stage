@@ -55,7 +55,7 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.6.2-9001
+### Version: 0.6.2-9002
 ### Copyright: Henrik Bengtsson (2022)
 ### License: ISC
 
@@ -436,6 +436,12 @@ if [[ "${action}" == "automate" ]]; then
     minfo "Configuring automatic staging and unstaging of original Conda environment  ..."
     assert_active_conda_environment
 
+    if [[ "${autostage}" == "enable" ]]; then
+        if [[ "$CONDA_DEFAULT_ENV" == "base" ]]; then
+          merror "The 'base' Conda environment cannot be staged. Please make sure to work with another Conda environment, cf. conda create --help"
+        fi
+    fi
+    
     if [[ -n ${autostage} ]]; then
       if [[ -f "${CONDA_PREFIX}/.conda-stage" ]]; then
           merror "Cannot configure auto-staging of a staged environment. Call 'conda-stage --unstage' first"

@@ -1,5 +1,17 @@
 # Version (development version)
 
+## Significant Changes
+
+* Support for auto-staging of the `base` Conda environment has been
+  disable, because it may cause confusion for those who have conda
+  configured to automatically activate the `base` environment in their
+  shell startup process.  For example, when staged, it is not longer
+  possible to install new Conda packages.  Others may get 'WARNING:
+  Cannot auto-stage Conda environment 'base', because 'conda-stage'
+  not found'. W might revisit support for auto-staging of the 'base'
+  environment at a later stage.  It is still possible to manually
+  stage, i.e. `conda-stage --stage`.
+
 ## Miscellaneous
 
 * Wrap URL in two of the warnings within brackets to avoid the
