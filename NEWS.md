@@ -1,23 +1,34 @@
+# Version 0.7.1 [2022-07-29]
+
+## New Features
+
+* Setting environment variable `CONDA_STAGE_ALLOW_BASE` to `true`
+  re-enables support for auto-staging the `base` Conda environment.
+  Use it with care and only if you understand that you cannot install
+  new Conda packages into a staged environment.
+  
+
 # Version 0.7.0 [2022-07-29]
 
 ## Significant Changes
 
 * Support for auto-staging of the `base` Conda environment has been
-  disable, because it may cause confusion for those who have conda
+  disabled, because it may cause confusion for those who have conda
   configured to automatically activate the `base` environment in their
   shell startup process.  For example, when staged, it is not longer
   possible to install new Conda packages.  Others may get 'WARNING:
   Cannot auto-stage Conda environment 'base', because 'conda-stage'
-  not found'. W might revisit support for auto-staging of the 'base'
+  not found'. We might revisit support for auto-staging of the 'base'
   environment at a later stage.  It is still possible to manually
   stage, i.e. `conda-stage --stage`.
 
 ## New Features
 
-* Add option `--prologue=<commands>` to configure auto-staging to call
-  a set of commands before calling `conda-stage` the first time.  This
-  can be useful when `conda-stage` is not on the `PATH`, but needs to
-  be loaded via an environment module first, e.g. `--prologue="module
+* Add option `--prologue=<commands>` to be used together with
+  `--auto-stage=enable` for configuring auto-staging to call a set of
+  commands before calling `conda-stage` the first time.  This can be
+  useful when `conda-stage` is not on the `PATH`, but needs to be
+  loaded via an environment module first, e.g. `--prologue="module
   load conda-stage"`.  To set a default prologue command, use
   environment variable, e.g. `CONDA_STAGE_PROLOGUE="module load
   conda-stage"`.
