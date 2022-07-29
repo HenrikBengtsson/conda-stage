@@ -19,10 +19,11 @@
 
 ## New Features
 
-* Add option `--prologue=<commands>` to configure auto-staging to call
-  a set of commands before calling `conda-stage` the first time.  This
-  can be useful when `conda-stage` is not on the `PATH`, but needs to
-  be loaded via an environment module first, e.g. `--prologue="module
+* Add option `--prologue=<commands>` to be used together with
+  `--auto-stage=enable` for configuring auto-staging to call a set of
+  commands before calling `conda-stage` the first time.  This can be
+  useful when `conda-stage` is not on the `PATH`, but needs to be
+  loaded via an environment module first, e.g. `--prologue="module
   load conda-stage"`.  To set a default prologue command, use
   environment variable, e.g. `CONDA_STAGE_PROLOGUE="module load
   conda-stage"`.
