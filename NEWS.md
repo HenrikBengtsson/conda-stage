@@ -1,7 +1,12 @@
 # Version (development version)
 
-* ...
+## New Features
 
+* Setting environment variable `CONDA_STAGE_ALLOW_BASE` to `true`
+  re-enables support for auto-staging the `base` Conda environment.
+  Use it with care and only if you understand that you cannot install
+  new Conda packages into a staged environment.
+  
 
 # Version 0.7.0 [2022-07-29]
 

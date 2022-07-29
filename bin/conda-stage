@@ -449,8 +449,8 @@ if [[ "${action}" == "automate" ]]; then
     assert_active_conda_environment
 
     if [[ "${autostage}" == "enable" ]]; then
-        if [[ "$CONDA_DEFAULT_ENV" == "base" ]]; then
-          merror "The 'base' Conda environment cannot be staged. Please make sure to work with another Conda environment, cf. conda create --help"
+        if ! ${CONDA_STAGE_ALLOW_BASE:-false} && [[ "$CONDA_DEFAULT_ENV" == "base" ]]; then
+          merror "The 'base' Conda environment should not be staged. Please make sure to work with another Conda environment, cf. conda create --help"
         fi
     fi
     
