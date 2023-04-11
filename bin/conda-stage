@@ -63,9 +63,10 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.7.1-9000
-### Copyright: Henrik Bengtsson (2022)
+### Version: 0.7.1-9001
+### Copyright: Henrik Bengtsson (2022-2023)
 ### License: ISC
+### Webpage: https://github.com/HenrikBengtsson/conda-stage/
 
 this="${BASH_SOURCE%/}"
 [[ -L "${this}" ]] && this=$(readlink "${this}")
