@@ -4,9 +4,10 @@ check: shellcheck spelling
 
 shellcheck:
 	cd bin; \
-	shellcheck -x -s bash conda-stage.sh; \
-	shellcheck -x -s bash incl/*.sh; \
-	shellcheck -x conda-stage
+	shellcheck -s bash conda-stage.sh; \
+	shellcheck -s bash incl/*.sh; \
+	shellcheck conda-stage
 
 spelling:
 	Rscript -e "spelling::spell_check_files(c('README.md', 'NEWS.md'), ignore=readLines('WORDLIST'))"
+	
