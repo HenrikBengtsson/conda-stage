@@ -63,8 +63,8 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
-### Version: 0.7.1-9001
-### Copyright: Henrik Bengtsson (2022-2023)
+### Version: 0.7.1-9002
+### Copyright: Henrik Bengtsson (2022-2024)
 ### License: ISC
 ### Webpage: https://github.com/HenrikBengtsson/conda-stage/
 
@@ -680,8 +680,8 @@ if [[ "${action}" == "stage" ]]; then
     make_dir "${path}"
     ## Extract atomically, i.e. write to temporary folder and rename
     make_dir "${path}.tmp"
-    tar -xf "${conda_pack_cache_file}" -C "${path}.tmp"
-    chmod -R u+w "${path}.tmp"
+    tar -xf "${conda_pack_cache_file}" -C "${path}.tmp" || merror "Failed to exact $(file_info "${conda_pack_cache_file}") to ${path}"
+    chmod -R u+w "${path}.tmp" || merror "Failed to make directory ${path}.tmp writable (recursively)"
     dt=$((SECONDS - t0))
     minfo "Total extract time: ${dt} seconds"
     
@@ -695,7 +695,7 @@ if [[ "${action}" == "stage" ]]; then
     fi
     
     remove_dir "${path}"
-    mv "${path}.tmp" "${path}"
+    mv "${path}.tmp" "${path}" || merror "Failed to rename directory ${path}.tmp to ${path}"
 
     ## Record original Conda environment
     echo "${CONDA_PREFIX}" > "${path}/.conda-stage"
@@ -705,7 +705,7 @@ if [[ "${action}" == "stage" ]]; then
     # shellcheck source=/dev/null
     CONDA_STAGE_ACTION=activate source "${path}/bin/activate"
     minfo "Unpacking (relocating)"
-    conda-unpack
+    conda-unpack || merror "Failed unpack staged Conda environment"
     dt=$((SECONDS - t0))
     minfo "Total 'conda-unpack' time: ${dt} seconds"
 
@@ -725,7 +725,7 @@ if [[ "${action}" == "stage" ]]; then
     
     if ! $writable; then
         minfo "Making staged environment read-only (use --writable to disable)"
-        chmod -R ugo-w "${path}"
+        chmod -R ugo-w "${path}" || merror "Failed to make directory ${path} read-only (recursively)"
     fi
 
     cmd="CONDA_STAGE_ACTION=activate"

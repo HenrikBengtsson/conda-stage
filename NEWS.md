@@ -1,6 +1,10 @@
 # Version (development version)
 
-* ...
+## Robustness
+
+* Now `conda-stage` asserts that Conda environments are successfully
+  extracted and unpacked on the local disk. If it fails, then an
+  informative error message is produced.
 
 
 # Version 0.7.1 [2022-07-29]
