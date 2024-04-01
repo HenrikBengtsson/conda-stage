@@ -705,7 +705,7 @@ if [[ "${action}" == "stage" ]]; then
     # shellcheck source=/dev/null
     CONDA_STAGE_ACTION=activate source "${path}/bin/activate"
     minfo "Unpacking (relocating)"
-    conda-unpack || merror "Failed unpack staged Conda environment"
+    conda-unpack || merror "Failed to unpack staged Conda environment"
     dt=$((SECONDS - t0))
     minfo "Total 'conda-unpack' time: ${dt} seconds"
 
