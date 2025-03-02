@@ -130,7 +130,7 @@ is:
 
 ```lua
 prepend_path("PATH","/path/to/conda-stage/bin")
-set_shell_function("conda-stage","source \"/path/to/conda-stage/bin/conda-stage.sh\"; conda-stage \"$@\"","")
+set_shell_function('conda-stage', 'source "/path/to/conda-stage/bin/conda-stage.sh"; conda-stage "$@"', '')
 pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
 ```
 
@@ -140,7 +140,102 @@ pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
 For further help, call:
 
 ```sh
-$ conda-stage --help
+$ conda-stage --help --full
+conda-stage: Stage Current Conda Environment on Local Disk
+
+Usage:
+ conda-stage [options]
+
+Basic options:  
+ --help                  Display the full help page with examples
+ --version               Output version of this software
+ --full                  Output expanded help and version information
+
+Output options:
+ --debug                 Output detailed debug information
+ --verbose               Output informative message
+ --quiet                 Silence all output
+
+Auto-staging options:
+ --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
+                         activating the original Conda environment
+ --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
+                         deactivating the staged Conda environment
+ --prologue=<commands>   Optional commands to call during autostaging
+                         before 'conda-stage' is called the first time.
+
+Manual-staging options:
+ --stage                 Stage a Conda environment
+ --unstage               Unstage and remove staged environment
+
+Conda-pack options:
+ --ignore-missing-files  Passed to 'conda-pack' as-is
+
+Other options:
+ --writable              Make the staged environment writable
+ --force                 Force an action, e.g. repacking environment
+ --path=<path>           Directory where Conda environment should be
+                         staged (Default: 'mktemp -d')
+ --pack                  Package up a Conda environment
+ --source                Output conda-stage() shell function
+
+Examples:
+
+ conda-stage --help --full
+ conda-stage --version
+ conda-stage --version --full
+
+ ## Enable auto-staging
+ conda activate myenv
+ conda-stage --auto-stage=enable
+ conda deactivate
+
+ ## Disable auto-staging
+ CONDA_STAGE=false conda activate myenv
+ conda-stage --auto-stage=disable
+ conda deactivate
+
+ ## Auto-stage when 'conda-stage' module needs to be "loaded" first
+ conda-stage --prologue="module load conda-stage" --auto-stage=enable
+ ## Set a default --prologue command
+ export CONDA_STAGE_PROLOGUE="module load conda-stage"
+ conda-stage --auto-stage=enable
+
+ ## Repack environment after updating or install new software
+ conda-stage --pack --force
+
+ ## Manual staging: Bash only
+ eval "$(conda-stage --source)"
+ conda activate myenv
+ conda-stage --stage
+
+ ## Manual staging: Other shells
+ conda activate myenv
+ stage_path=$(mktemp -d)
+ conda-stage --stage --path="${stage_path}"
+ source "${stage_path}/bin/activate"
+
+Environment variables:
+ CONDA_STAGE            (logical) enable or disable Conda staging
+ CONDA_STAGE_DEBUG      (logical) alternative to --debug
+ CONDA_STAGE_VERBOSE    (logical) alternative to --verbose
+ CONDA_STAGE_WRITABLE   (logical) alternative to --writable
+ CONDA_STAGE_ALLOW_BASE (logical) stage "base" environment (experimental)
+ CONDA_STAGE_PATH       (string)  alternative to --path=<path>
+ CONDA_STAGE_PROLOGUE   (string)  alternative to --prologue=<commands>
+ CONDA_STAGE_LOGFILE    (string)  option logging to file
+ CONDA_STAGE_STAGED     (logical) is environment staged? (read-only)
+ CONDA_STAGE_AUTOSTAGED (logical) is environment auto-staged? (read-only)
+
+Requirements:
+ * Bash
+ * conda-pack (automatically installed into Conda environment, if missing)
+ * conda
+
+Version: 0.7.2-9000
+Copyright: Henrik Bengtsson (2022-2025)
+License: ISC
+Webpage: https://github.com/HenrikBengtsson/conda-stage/
 ```
 
 
@@ -175,5 +270,3 @@ $ export PATH
 $ conda-stage --version
 0.7.1
 ```
-
-

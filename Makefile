@@ -2,6 +2,12 @@ SHELL=bash
 
 check: shellcheck spelling
 
+README.md: README.md.tmpl bin/conda-stage
+	@bfr=$$(cat "$<"); \
+	help=$$(bin/conda-stage --help --full); \
+	bfr=$$(echo "$${bfr/\{\{ HELP \}\}/$${help}}"); \
+	printf "$${bfr}" > $@
+
 shellcheck:
 	cd bin; \
 	shellcheck -s bash conda-stage.sh; \
@@ -10,4 +16,3 @@ shellcheck:
 
 spelling:
 	Rscript -e "spelling::spell_check_files(c('README.md', 'NEWS.md'), ignore=readLines('WORDLIST'))"
-	
