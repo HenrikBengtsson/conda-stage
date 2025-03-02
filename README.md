@@ -151,7 +151,6 @@ Basic options:
 
 Output options:
  --debug                 Output detailed debug information
- --verbose               Output informative message
  --quiet                 Silence all output
 
 Auto-staging options:
@@ -171,10 +170,11 @@ Conda-pack options:
 
 Other options:
  --writable              Make the staged environment writable
- --force                 Force an action, e.g. repacking environment
+ --assert=<what>         Assert that environment is 'staged' or 'unstaged'
  --path=<path>           Directory where Conda environment should be
                          staged (Default: 'mktemp -d')
  --pack                  Package up a Conda environment
+ --force                 Force an action, e.g. repacking environment
  --source                Output conda-stage() shell function
 
 Examples:
