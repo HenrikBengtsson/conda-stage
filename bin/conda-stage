@@ -73,6 +73,18 @@
 #"  conda-stage --stage --path="${stage_path}"
 #"  source "${stage_path}/bin/activate"
 #"
+#" Environment variables:
+#"  CONDA_STAGE            (logical) enable or disable Conda staging
+#"  CONDA_STAGE_DEBUG      (logical) alternative to --debug
+#"  CONDA_STAGE_VERBOSE    (logical) alternative to --verbose
+#"  CONDA_STAGE_WRITABLE   (logical) alternative to --writable
+#"  CONDA_STAGE_ALLOW_BASE (logical) stage "base" environment (experimental)
+#"  CONDA_STAGE_PATH       (string)  alternative to --path=<path>
+#"  CONDA_STAGE_PROLOGUE   (string)  alternative to --prologue=<commands>
+#"  CONDA_STAGE_LOGFILE    (string)  option logging to file
+#"  CONDA_STAGE_STAGED     (logical) is environment staged? (read-only)
+#"  CONDA_STAGE_AUTOSTAGED (logical) is environment auto-staged? (read-only)
+#"
 #" Requirements:
 #"  * Bash
 #"  * conda-pack (automatically installed into Conda environment, if missing)
