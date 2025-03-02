@@ -107,6 +107,36 @@ To unstage, that is, reactivate the original environment 'myenv' and remove all 
 $ 
 ```
 
+
+## Environment modules
+
+The `conda-stage` tool can be provided via an environment module, e.g.
+
+```sh
+module load conda-stage
+```
+
+An minimal Lua module ("Lmod") that will:
+
+1. Adds the `conda-stage` tool to the search path
+
+2. Creates the `conda-stage()` function (replaces `eval $(conda-stage
+   --source)`)
+   
+3. Configures auto-staging to load the module when activating the
+   Conda environment
+
+is:
+
+```lua
+prepend_path("PATH","/path/to/conda-stage/bin")
+set_shell_function("conda-stage","source \"/path/to/conda-stage/bin/conda-stage.sh\"; conda-stage \"$@\"","")
+pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
+```
+
+
+## Additional help
+
 For further help, call:
 
 ```sh
