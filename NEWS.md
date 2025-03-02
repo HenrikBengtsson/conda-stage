@@ -7,6 +7,10 @@
 
 * `conda-state --help --full` gives more details help.
 
+* Add `conda-stage --assert=staged` to assert that there is an active
+  Conda environment and it has been staged. Analogously, `conda-stage
+  --assert=unstaged` asserts that an active environment is not staged.
+
 
 # Version 0.7.2 [2024-04-01]
 

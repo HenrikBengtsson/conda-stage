@@ -11,7 +11,6 @@
 #'
 #' Output options:
 #"  --debug                 Output detailed debug information
-#'  --verbose               Output informative message
 #'  --quiet                 Silence all output
 #'
 #' Auto-staging options:
@@ -31,10 +30,11 @@
 #"
 #' Other options:
 #'  --writable              Make the staged environment writable
-#'  --force                 Force an action, e.g. repacking environment
+#"  --assert=<what>         Assert that environment is 'staged' or 'unstaged'
 #'  --path=<path>           Directory where Conda environment should be
 #'                          staged (Default: 'mktemp -d')
 #"  --pack                  Package up a Conda environment
+#'  --force                 Force an action, e.g. repacking environment
 #"  --source                Output conda-stage() shell function
 #'
 #' Examples:
@@ -309,6 +309,7 @@ path=${CONDA_STAGE_PATH}
 writable=${CONDA_STAGE_WRITABLE:-false}
 autostage=
 autounstage=
+assert=
 prologue=${CONDA_STAGE_PROLOGUE}
 conda_pack_opts=()
 
@@ -341,6 +342,7 @@ while [[ $# -gt 0 ]]; do
         action=pack
     elif [[ "$1" == "--ignore-missing-files" ]]; then
         conda_pack_opts+=("$1")
+        
     ## Options (--key=value):
     elif [[ "$1" =~ ^--.*=.*$ ]]; then
         key=${1//--}
@@ -376,6 +378,15 @@ while [[ $# -gt 0 ]]; do
             else
                 merror "Unknown value of option '--${key}=${value}'"
             fi
+        elif [[ "${key}" == "assert" ]]; then
+            if [[ ${value} == "staged" ]]; then
+                assert="${value}"
+            elif [[ ${value} == "unstaged" ]]; then
+                assert="${value}"
+            else
+                merror "Unknown value of option '--${key}=${value}'"
+            fi
+            action="assert"
         else
             merror "Unknown option: $1"
         fi
@@ -442,6 +453,23 @@ if [[ "${action}" == "source" ]]; then
     file="$(dirname "${this}")/conda-stage.sh"
     assert_file_exists "${file}"
     cat "${file}"
+    exit 0
+fi
+
+if [[ "${action}" == "assert" ]]; then
+    if [[ ${assert} == "staged" ]]; then
+        if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+            merror "No Conda environment is activate"
+        elif ! ${CONDA_STAGE_STAGED:-false}; then
+            merror "Conda environment '${CONDA_DEFAULT_ENV}' is activated but not staged"
+        fi
+    elif [[ ${assert} == "unstaged" ]]; then
+        if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+            merror "No Conda environment is activate"
+        elif ${CONDA_STAGE_STAGED:-false}; then
+            merror "Conda environment '${CONDA_DEFAULT_ENV}' is activated but staged"
+        fi
+    fi
     exit 0
 fi
 
