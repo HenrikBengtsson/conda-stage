@@ -93,30 +93,153 @@ $ conda activate myenv
 (myenv) $ which python
 /home/alice/.conda/envs/myenv/bin/python
 (myenv) $ conda-stage --stage --quiet
-(myenv*) $ which python
+(/tmp/alice/conda-stage-VlQr/myenv) $ which python
 /tmp/alice/conda-stage-VlQr/myenv/bin/python
 ```
 
 To unstage, that is, reactivate the original environment 'myenv' and remove all staged files, do:
 
 ```sh
-(myenv*) $ conda-stage --unstage --quiet
+(/tmp/alice/conda-stage-VlQr/myenv) $ conda-stage --unstage --quiet
 (myenv) $ which python
 /home/alice/.conda/envs/myenv/bin/python
 (myenv) $ conda deactivate
 $ 
 ```
 
-For further help, call:
+
+## Environment modules
+
+The `conda-stage` tool can be provided via an environment module, e.g.
 
 ```sh
-$ conda-stage --help
+module load conda-stage
+```
+
+An minimal Lua module ("Lmod") that will:
+
+1. Adds the `conda-stage` tool to the search path
+
+2. Creates the `conda-stage()` function (replaces `eval $(conda-stage
+   --source)`)
+   
+3. Configures auto-staging to load the module when activating the
+   Conda environment
+
+is:
+
+```lua
+prepend_path("PATH","/path/to/conda-stage/bin")
+set_shell_function('conda-stage', 'source "/path/to/conda-stage/bin/conda-stage.sh"; conda-stage "$@"', '')
+pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
+```
+
+
+## Command-line help
+
+```sh
+$ conda-stage --help --full
+conda-stage: Stage Current Conda Environment on Local Disk
+
+Usage:
+ conda-stage [options]
+
+Basic options:  
+ --help                  Display the full help page with examples
+ --version               Output version of this software
+ --full                  Output expanded help and version information
+
+Output options:
+ --debug                 Output detailed debug information
+ --quiet                 Silence all output
+
+Auto-staging options:
+ --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
+                         activating the original Conda environment
+ --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
+                         deactivating the staged Conda environment
+ --prologue=<commands>   Optional commands to call during autostaging
+                         before 'conda-stage' is called the first time.
+
+Manual-staging options:
+ --stage                 Stage a Conda environment
+ --unstage               Unstage and remove staged environment
+
+Conda-pack options:
+ --ignore-missing-files  Passed to 'conda-pack' as-is
+
+Other options:
+ --writable              Make the staged environment writable
+ --assert=<what>         Assert that environment is 'staged' or 'unstaged'
+ --path=<path>           Directory where Conda environment should be
+                         staged (Default: 'mktemp -d')
+ --pack                  Package up a Conda environment
+ --force                 Force an action, e.g. repacking environment
+ --source                Output conda-stage() shell function
+
+Examples:
+
+ conda-stage --help --full
+ conda-stage --version
+ conda-stage --version --full
+
+ ## Enable auto-staging
+ conda activate myenv
+ conda-stage --auto-stage=enable
+ conda deactivate
+
+ ## Disable auto-staging
+ CONDA_STAGE=false conda activate myenv
+ conda-stage --auto-stage=disable
+ conda deactivate
+
+ ## Auto-stage when 'conda-stage' module needs to be "loaded" first
+ conda-stage --prologue="module load conda-stage" --auto-stage=enable
+ ## Set a default --prologue command
+ export CONDA_STAGE_PROLOGUE="module load conda-stage"
+ conda-stage --auto-stage=enable
+
+ ## Repack environment after updating or install new software
+ conda-stage --pack --force
+
+ ## Manual staging: Bash only
+ eval "$(conda-stage --source)"
+ conda activate myenv
+ conda-stage --stage
+
+ ## Manual staging: Other shells
+ conda activate myenv
+ stage_path=$(mktemp -d)
+ conda-stage --stage --path="${stage_path}"
+ source "${stage_path}/bin/activate"
+
+Environment variables:
+ CONDA_STAGE            (logical) enable or disable Conda staging
+ CONDA_STAGE_DEBUG      (logical) alternative to --debug
+ CONDA_STAGE_VERBOSE    (logical) alternative to --verbose
+ CONDA_STAGE_WRITABLE   (logical) alternative to --writable
+ CONDA_STAGE_ALLOW_BASE (logical) stage "base" environment (experimental)
+ CONDA_STAGE_PATH       (string)  alternative to --path=<path>
+ CONDA_STAGE_PROLOGUE   (string)  alternative to --prologue=<commands>
+ CONDA_STAGE_LOGFILE    (string)  option logging to file
+ CONDA_STAGE_STAGED     (logical) is environment staged? (read-only)
+ CONDA_STAGE_AUTOSTAGED (logical) is environment auto-staged? (read-only)
+
+Requirements:
+ * Bash
+ * conda-pack (automatically installed into Conda environment, if missing)
+ * conda
+
+Version: 0.8.0
+Copyright: Henrik Bengtsson (2022-2025)
+License: ISC
+Webpage: https://github.com/HenrikBengtsson/conda-stage/
 ```
 
 
 ## Known limitations
 
-* An already staged Conda environment cannot be staged, cf.
+* An already staged Conda environment cannot be staged.
 
 * `RPATH` (= run-time search path) in binaries are not
   rewritten/relocated by **conda-pack** by staging,
@@ -129,7 +252,7 @@ $ conda-stage --help
 
 * **Bash**
 
-* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniconda (~400 MB disk space) or Anaconda (~3 TB disk space). Commands `conda activate ...` and `conda deactivate` only works in conda (>= 4.6) [2019-01-15].
+* [**conda**](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html), e.g. Miniforge (~500 MB disk space), Miniconda (~900 MB disk space) or Anaconda (~3 TB disk space). Commands `conda activate ...` and `conda deactivate` works in conda (>= 4.6) [2019-01-15].
 
 All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack/), which is a tool for packaging and distributing conda environments.  If not already installed, it will be installed into the active environment before that is staged to local disk.
 
@@ -138,12 +261,10 @@ All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.7.1.tar.gz
-$ tar xf 0.7.1.tar.gz
-$ PATH=/path/to/conda-stage-0.7.1/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.8.0.tar.gz
+$ tar xf 0.8.0.tar.gz
+$ PATH=/path/to/conda-stage-0.8.0/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.7.1
+0.8.0
 ```
-
-

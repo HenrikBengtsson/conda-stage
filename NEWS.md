@@ -1,3 +1,17 @@
+# Version 0.8.0 [2025-03-02]
+
+## New Features
+
+* `conda-state --version --full` reports also on the `conda-pack`
+  version.
+
+* `conda-state --help --full` gives more details help.
+
+* Add `conda-stage --assert=staged` to assert that there is an active
+  Conda environment and it has been staged. Analogously, `conda-stage
+  --assert=unstaged` asserts that an active environment is not staged.
+
+
 # Version 0.7.2 [2024-04-01]
 
 ## Robustness
