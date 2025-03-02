@@ -9,12 +9,10 @@ function help {
     local what res
 
     what=$1
-    res=$(grep -E "^#'" "$0" | grep -vE "^(#' whatis: )" | cut -b 4-)
-
     if [[ $what == "full" ]]; then
-        res=$(echo "$res" | sed '/^---/d')
+        res=$(grep -E "^#['\"]" "$0" | grep -vE "^(#' whatis: )" | cut -b 4-)
     else
-        res=$(echo "$res" | sed '/^---/Q')
+        res=$(grep -E "^#'" "$0" | grep -vE "^(#' whatis: )" | cut -b 4-)
     fi
 
     printf "%s\\n" "${res[@]}"

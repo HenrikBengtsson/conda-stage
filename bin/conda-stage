@@ -1,16 +1,16 @@
 #! /usr/bin/env bash
-#' conda-stage: Stage Conda Environment on Local Disk
+#' conda-stage: Stage Current Conda Environment on Local Disk
 #' 
 #' Usage:
 #'  conda-stage [options]
 #' 
-#' Options:  
+#' Basic options:  
 #'  --help                  Display the full help page with examples
 #'  --version               Output version of this software
-#'  --full                  Additional help and version output
+#'  --full                  Output expanded help and version information
 #'
 #' Output options:
-#'  --debug                 Output detailed debug information
+#"  --debug                 Output detailed debug information
 #'  --verbose               Output informative message
 #'  --quiet                 Silence all output
 #'
@@ -19,30 +19,29 @@
 #'                          activating the original Conda environment
 #'  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
 #'                          deactivating the staged Conda environment
-#'  --prologue=<commands>   Optional commands to call during autostaging
-#'                          before 'conda-stage' is called the first time.
+#"  --prologue=<commands>   Optional commands to call during autostaging
+#"                          before 'conda-stage' is called the first time.
 #'
 #' Manual-staging options:
 #'  --stage                 Stage a Conda environment
 #'  --unstage               Unstage and remove staged environment
 #'
-#' conda-pack options:
-#'  --ignore-missing-files  Passed to 'conda-pack' as-is
-#'
+#" Conda-pack options:
+#"  --ignore-missing-files  Passed to 'conda-pack' as-is
+#"
 #' Other options:
 #'  --writable              Make the staged environment writable
 #'  --force                 Force an action, e.g. repacking environment
 #'  --path=<path>           Directory where Conda environment should be
 #'                          staged (Default: `mktemp -d`)
-#'  --pack                  Package up a Conda environment
-#'  --source                Output conda-stage() shell function
+#"  --pack                  Package up a Conda environment
+#"  --source                Output conda-stage() shell function
 #'
-#' ---
 #' Examples:
 #'
-#'  conda-stage --help
-#'  conda-stage --version
-#'  conda-stage --version --full
+#'  conda-stage --help --full
+#"  conda-stage --version
+#"  conda-stage --version --full
 #'
 #'  ## Enable auto-staging
 #'  conda-stage --auto-stage=enable
@@ -54,34 +53,34 @@
 #'  conda-stage --auto-stage=disable
 #'  conda deactivate
 #'
-#'  ## Auto-stage when 'conda-stage' module needs to be "loaded" first
-#'  conda-stage --prologue="module load conda-stage" --auto-stage=enable
-#'  ## Set a default --prologue command
-#'  export CONDA_STAGE_PROLOGUE="module load conda-stage"
-#'  conda-stage --auto-stage=enable
-#'
-#'  ## Repack environment after updating or install new software
-#'  conda-stage --pack --force
-#'
-#'  ## Manual staging: Bash only
-#'  eval "$(conda-stage --source)"
-#'  conda activate myenv
-#'  conda-stage --stage
-#'
-#'  ## Manual staging: Other shells
-#'  conda activate myenv
-#'  stage_path=$(mktemp -d)
-#'  conda-stage --stage --path="${stage_path}"
-#'  source "${stage_path}/bin/activate"
-#'
-#' Requirements:
-#'  * Bash
-#'  * conda-pack (automatically installed into Conda environment, if missing)
-#'  * conda
-#'
+#"  ## Auto-stage when 'conda-stage' module needs to be "loaded" first
+#"  conda-stage --prologue="module load conda-stage" --auto-stage=enable
+#"  ## Set a default --prologue command
+#"  export CONDA_STAGE_PROLOGUE="module load conda-stage"
+#"  conda-stage --auto-stage=enable
+#"
+#"  ## Repack environment after updating or install new software
+#"  conda-stage --pack --force
+#"
+#"  ## Manual staging: Bash only
+#"  eval "$(conda-stage --source)"
+#"  conda activate myenv
+#"  conda-stage --stage
+#"
+#"  ## Manual staging: Other shells
+#"  conda activate myenv
+#"  stage_path=$(mktemp -d)
+#"  conda-stage --stage --path="${stage_path}"
+#"  source "${stage_path}/bin/activate"
+#"
+#" Requirements:
+#"  * Bash
+#"  * conda-pack (automatically installed into Conda environment, if missing)
+#"  * conda
+#"
 #' Version: 0.7.2-9000
-#' Copyright: Henrik Bengtsson (2022-2025)
-#' License: ISC
+#" Copyright: Henrik Bengtsson (2022-2025)
+#" License: ISC
 #' Webpage: https://github.com/HenrikBengtsson/conda-stage/
 
 this="${BASH_SOURCE%/}"
