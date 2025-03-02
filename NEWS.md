@@ -5,6 +5,8 @@
 * `conda-state --version --full` reports also on the `conda-pack`
   version.
 
+* `conda-state --help --full` gives more details help.
+
 
 # Version 0.7.2 [2024-04-01]
 
