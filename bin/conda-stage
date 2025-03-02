@@ -33,7 +33,7 @@
 #'  --writable              Make the staged environment writable
 #'  --force                 Force an action, e.g. repacking environment
 #'  --path=<path>           Directory where Conda environment should be
-#'                          staged (Default: `mktemp -d`)
+#'                          staged (Default: 'mktemp -d')
 #"  --pack                  Package up a Conda environment
 #"  --source                Output conda-stage() shell function
 #'
@@ -44,8 +44,8 @@
 #"  conda-stage --version --full
 #'
 #'  ## Enable auto-staging
-#'  conda-stage --auto-stage=enable
 #'  conda activate myenv
+#'  conda-stage --auto-stage=enable
 #'  conda deactivate
 #'
 #'  ## Disable auto-staging

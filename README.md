@@ -116,7 +116,7 @@ $ conda-stage --help
 
 ## Known limitations
 
-* An already staged Conda environment cannot be staged, cf.
+* An already staged Conda environment cannot be staged.
 
 * `RPATH` (= run-time search path) in binaries are not
   rewritten/relocated by **conda-pack** by staging,
