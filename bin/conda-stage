@@ -64,6 +64,11 @@
 ###  conda-stage --stage --path="${stage_path}"
 ###  source "${stage_path}/bin/activate"
 ###
+### Requirements:
+###  * Bash
+###  * conda-pack (automatically installed into Conda environment, if missing)
+###  * conda
+###
 ### Version: 0.7.2-9000
 ### Copyright: Henrik Bengtsson (2022-2025)
 ### License: ISC
