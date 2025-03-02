@@ -64,7 +64,7 @@
 ###  source "${stage_path}/bin/activate"
 ###
 ### Version: 0.7.2-9000
-### Copyright: Henrik Bengtsson (2022-2024)
+### Copyright: Henrik Bengtsson (2022-2025)
 ### License: ISC
 ### Webpage: https://github.com/HenrikBengtsson/conda-stage/
 
@@ -381,7 +381,8 @@ if [[ $action == "help" ]]; then
 elif [[ $action == "version" ]]; then
     if $full; then
         echo "conda-stage: $(version)"
-        echo "conda: $(conda_version || echo "<please install Miniconda or Anaconda>")"
+        echo "conda-pack: $(conda_pack_version || echo "<please install conda-pack>")"
+        echo "conda: $(conda_version || echo "<please install Conda, e.g. Miniforge, Miniconda, and Anaconda>")"
     else
         version
     fi

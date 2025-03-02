@@ -1,6 +1,9 @@
 # Version (development version)
 
-* ...
+## New Features
+
+* `conda-state --version --full` reports also on the `conda-pack`
+  version.
 
 
 # Version 0.7.2 [2024-04-01]
