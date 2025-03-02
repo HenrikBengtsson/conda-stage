@@ -7,27 +7,37 @@
 #' Options:  
 #'  --help                  Display the full help page with examples
 #'  --version               Output version of this software
+#'  --full                  Additional help and version output
+#'
+#' Output options:
 #'  --debug                 Output detailed debug information
 #'  --verbose               Output informative message
 #'  --quiet                 Silence all output
-#'  --force                 Force an action, e.g. repacking environment
-#'  --full                  Force an action, e.g. repacking environment
-#'  --source                Generate conda-stage() shell function
-#'  --ignore-missing-files  Passed to 'conda-pack' as-is
-#'  --writable              Make the staged environment writable
+#'
+#' Auto-staging options:
 #'  --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
 #'                          activating the original Conda environment
 #'  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
 #'                          deactivating the staged Conda environment
 #'  --prologue=<commands>   Optional commands to call during autostaging
 #'                          before 'conda-stage' is called the first time.
+#'
+#' Manual-staging options:
+#'  --stage                 Stage a Conda environment
+#'  --unstage               Unstage and remove staged environment
+#'
+#' conda-pack options:
+#'  --ignore-missing-files  Passed to 'conda-pack' as-is
+#'
+#' Other options:
+#'  --writable              Make the staged environment writable
+#'  --force                 Force an action, e.g. repacking environment
 #'  --path=<path>           Directory where Conda environment should be
 #'                          staged (Default: `mktemp -d`)
 #'  --pack                  Package up a Conda environment
-#'  --stage                 Stage a Conda environment
-#'  --unstage               Unstage and remove staged environment
-#' ---
+#'  --source                Output conda-stage() shell function
 #'
+#' ---
 #' Examples:
 #'
 #'  conda-stage --help
@@ -297,7 +307,6 @@ while [[ $# -gt 0 ]]; do
     ## Options (--flags):
     if [[ "$1" == "--help" ]]; then
         action=help
-        full=true
     elif [[ "$1" == "--version" ]]; then
         action=version
     elif [[ "$1" == "--full" ]]; then
