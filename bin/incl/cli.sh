@@ -2,7 +2,7 @@
 # CLI utility functions
 # -------------------------------------------------------------------------
 function version {
-    grep -E "^###[ ]*Version:[ ]*" "$0" | sed 's/###[ ]*Version:[ ]*//g'
+    grep -E "^#'[ ]*Version:[ ]*" "$0" | sed "s/#'[ ]*Version:[ ]*//g"
 }
 
 function help {
