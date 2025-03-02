@@ -135,9 +135,7 @@ pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
 ```
 
 
-## Additional help
-
-For further help, call:
+## Command-line help
 
 ```sh
 $ conda-stage --help --full
