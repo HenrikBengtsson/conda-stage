@@ -38,7 +38,7 @@ INFO: Enabled auto-unstaging
 $ 
 ```
 
-This configuration is only needed to be done once per environment.
+This configuration is only needed to be done once per environment. To silence the output, add `--quiet`, which then will also silence the output generated when activating or deactivating an auto-staged environment.
 
 Now, whenever activating this environment in the future, it will be automatically staged;
 
