@@ -8,6 +8,7 @@ README.md: README.md.tmpl bin/conda-stage
 	version=$$(bin/conda-stage --version); \
 	bfr=$$(echo "$${bfr/\{\{ HELP \}\}/$${help}}"); \
 	bfr=$$(echo "$${bfr//\{\{ VERSION \}\}/$${version}}"); \
+	bfr=$$(echo "$${bfr//%/%%}"); \
 	printf "$${bfr}" > $@
 
 shellcheck:

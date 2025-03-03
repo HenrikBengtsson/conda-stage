@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
-#' conda-stage: Stage Current Conda Environment on Local Disk
+#' conda-stage: Stage Conda Environment on Local Disk
 #' 
 #' Usage:
-#'  conda-stage [options]
+#'  conda-stage [options] [env_name]
 #' 
 #' Basic options:  
 #'  --help                  Display the full help page with examples
@@ -15,27 +15,31 @@
 #'
 #' Auto-staging options:
 #'  --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
-#'                          activating the original Conda environment
-#'  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
-#'                          deactivating the staged Conda environment
+#'                          activating a Conda environment
+#"  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
+#"                          deactivating the staged Conda environment
 #"  --prologue=<commands>   Optional commands to call during autostaging
-#"                          before 'conda-stage' is called the first time.
+#"                          before 'conda-stage' is called the first time
 #'
-#' Manual-staging options:
-#'  --stage                 Stage a Conda environment
-#'  --unstage               Unstage and remove staged environment
-#'
+#" Manual-staging options:
+#"  --stage                 Stage a Conda environment
+#"  --unstage               Unstage and remove staged environment
+#"
 #" Conda-pack options:
 #"  --ignore-missing-files  Passed to 'conda-pack' as-is
 #"
 #' Other options:
-#'  --writable              Make the staged environment writable
+#"  --writable              Make the staged environment writable
 #"  --assert=<what>         Assert that environment is 'staged' or 'unstaged'
-#'  --path=<path>           Directory where Conda environment should be
-#'                          staged (Default: 'mktemp -d')
+#"  --path=<path>           Directory where Conda environment should be
+#"                          staged (Default: 'mktemp -d')
 #"  --pack                  Package up a Conda environment
-#'  --force                 Force an action, e.g. repacking environment
+#"  --force                 Force an action, e.g. repacking environment
 #"  --source                Output conda-stage() shell function
+#'
+#' Arguments:
+#'  env_name                An optional environment name
+#'                          (Default: the current activated environment)
 #'
 #' Examples:
 #'
@@ -44,20 +48,17 @@
 #"  conda-stage --version --full
 #'
 #'  ## Enable auto-staging
-#'  conda activate myenv
-#'  conda-stage --auto-stage=enable
-#'  conda deactivate
+#'  conda-stage --auto-stage=enable myenv
 #'
 #'  ## Disable auto-staging
-#'  CONDA_STAGE=false conda activate myenv
-#'  conda-stage --auto-stage=disable
-#'  conda deactivate
+#'  conda-stage --auto-stage=disable myenv
 #'
 #"  ## Auto-stage when 'conda-stage' module needs to be "loaded" first
-#"  conda-stage --prologue="module load conda-stage" --auto-stage=enable
-#"  ## Set a default --prologue command
+#"  conda-stage --prologue="module load conda-stage" --auto-stage=enable myenv
+#"
+#"  ## Alternatively, set a default --prologue command
 #"  export CONDA_STAGE_PROLOGUE="module load conda-stage"
-#"  conda-stage --auto-stage=enable
+#"  conda-stage --auto-stage=enable myenv
 #"
 #"  ## Repack environment after updating or install new software
 #"  conda-stage --pack --force
@@ -90,7 +91,7 @@
 #"  * conda-pack (automatically installed into Conda environment, if missing)
 #"  * conda
 #"
-#' Version: 0.8.0
+#' Version: 0.9.0
 #" Copyright: Henrik Bengtsson (2022-2025)
 #" License: ISC
 #' Webpage: https://github.com/HenrikBengtsson/conda-stage/
@@ -297,6 +298,35 @@ function file_info {
     stat -t --printf "%n (%s bytes; %y)" "$1"
 }
 
+
+function conda_stage_pack() {
+    minfo "Package current Conda environment (${CONDA_PREFIX}) to cache ..."
+    mdebug "- Using conda-stage $(version)"
+
+    ## Already done?
+    file=$(conda_pack_cache_file)
+    if ! ${force} && [[ -f "${file}" ]]; then
+        if is_conda_pack_cache_file_uptodate; then
+            mdebug "conda-pack file exists and is up to date: ${file}"
+            merror "Package tarball already exists. Use --force to recreate: ${file}"
+        else
+            mdebug "conda-pack file exists, but is out to date: ${file}"
+            minfo "Removing out-of-date package tarball ($(file_info "${file}"))"
+            force=true
+        fi
+    fi
+    
+    conda_pack_cache_file=$(conda_pack)
+    exit_code=$?
+    if [[ ${exit_code} -ne 0 ]]; then
+        return "${exit_code}"
+    fi
+    
+    minfo "Created conda-pack tarball: $(file_info "${conda_pack_cache_file}")"
+    return 0
+}
+
+
 # =========================================================================
 # MAIN
 # =========================================================================
@@ -312,6 +342,7 @@ autounstage=
 assert=
 prologue=${CONDA_STAGE_PROLOGUE}
 conda_pack_opts=()
+envname=
 
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
@@ -391,7 +422,10 @@ while [[ $# -gt 0 ]]; do
             merror "Unknown option: $1"
         fi
     else
-        merror "Unknown option: $1"
+        if [[ -n ${envname} ]]; then
+            merror "Only one environment can be specified: '${envname}' '$1'"
+        fi
+        envname=${1}
     fi
     shift
 done
@@ -446,6 +480,7 @@ mdebug "writable: ${writable}"
 mdebug "prologue: ${prologue}"
 mdebug "autostage: ${autostage}"
 mdebug "autounstage: ${autounstage}"
+mdebug "envname: ${envname}"
 
 CONDA_STAGE_DEBUG=${debug}
 
@@ -473,31 +508,42 @@ if [[ "${action}" == "assert" ]]; then
     exit 0
 fi
 
-if [[ "${action}" == "pack" ]]; then
-    minfo "Package current Conda environment (${CONDA_PREFIX}) to cache ..."
-    mdebug "- Using conda-stage $(version)"
 
-    ## Already done?
-    file=$(conda_pack_cache_file)
-    if ! ${force} && [[ -f "${file}" ]]; then
-        if is_conda_pack_cache_file_uptodate; then
-            mdebug "conda-pack file exists and is up to date: ${file}"
-            merror "Package tarball already exists. Use --force to recreate: ${file}"
-        else
-            mdebug "conda-pack file exists, but is out to date: ${file}"
-            minfo "Removing out-of-date package tarball ($(file_info "${file}"))"
-            force=true
+## Validate environment, if specified
+if [[ -n ${envname} ]]; then
+    if ! command -v conda &> /dev/null; then
+        merror "Command not found: 'conda'"
+    fi
+    
+    ## Assert that the environment exists
+    if ! conda env list | grep -q -E "^${envname}\b"; then
+        merror "Conda environment not found: '${envname}'"
+    fi
+    
+    ## Assert that a different one is not currently activate
+    if [[ -n ${CONDA_DEFAULT_ENV} ]] && [[ ${envname} != "${CONDA_DEFAULT_ENV}" ]]; then
+        merror "Cannot '${action}' on Conda environment '${envname}', because '${CONDA_DEFAULT_ENV}' is currently activated"
+    fi
+
+    ## Active environment? (only in this process)
+    if [[ -z ${CONDA_DEFAULT_ENV} ]]; then
+        mdebug "CONDA_STAGE=false conda activate '${envname}' ..."
+        conda_sh="$(conda info --base)/etc/profile.d/conda.sh"
+        if [[ ! -f "${conda_sh}" ]]; then
+            merror "Cannot create conda() function. No such file: ${conda_sh}"
         fi
+        # shellcheck source=/dev/null
+        source "${conda_sh}"
+        CONDA_STAGE=false conda activate "${envname}"
+        mdebug "CONDA_STAGE=false conda activate '${envname}' ... done"
     fi
-    
-    conda_pack_cache_file=$(conda_pack)
+fi
+
+
+if [[ "${action}" == "pack" ]]; then
+    conda_stage_pack
     exit_code=$?
-    if [[ ${exit_code} -ne 0 ]]; then
-        exit "${exit_code}"
-    fi
-    
-    minfo "Created conda-pack tarball: ${conda_pack_cache_file}"
-    exit 0
+    exit "${exit_code}"
 fi
 
 if [[ "${action}" == "automate" ]]; then
@@ -571,12 +617,26 @@ fi
 EOF
           assert_file_exists "${file}"
           mdebug "${file}: $(echo; cat "${file}")"
-  
+
+          ## Package environment already now
+          old_force=${force}
+          force=true
+          conda_stage_pack
+          force=${old_force}
+          
           minfo "Enabled auto-staging"
       else
           if [[ -f "${file}" ]]; then
+              info="$(file_info "${file}")"
               rm "${file}"
-              [[ -f "${file}" ]] && merror "Failed to remove file: ${file}"
+              [[ -f "${file}" ]] && merror "Failed to remove file: ${info}"
+          fi
+          file=$(conda_pack_cache_file)
+          if [[ -f "${file}" ]]; then
+              info="$(file_info "${file}")"
+              rm "${file}"
+              [[ -f "${file}" ]] && merror "Failed to remove file: ${info}"
+              minfo "Removed 'conda-pack' tarball ${info}"
           fi
           minfo "Disabled auto-staging"
       fi
@@ -643,7 +703,7 @@ EOF
       fi
   
       ## Installed auto-unstaging to original environment?
-      if [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
+      if [[ -z ${envname} ]] && [[ ! -f "${CONDA_PREFIX}/.conda-stage" ]]; then
           file=$(conda_pack_cache_file)
           if [[ -f "${file}" ]]; then
               rm "${file}"
