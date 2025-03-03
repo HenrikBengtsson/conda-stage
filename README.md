@@ -248,7 +248,7 @@ Requirements:
  * conda-pack (automatically installed into Conda environment, if missing)
  * conda
 
-Version: 0.9.0
+Version: 0.9.0-9000
 Copyright: Henrik Bengtsson (2022-2025)
 License: ISC
 Webpage: https://github.com/HenrikBengtsson/conda-stage/
@@ -279,10 +279,10 @@ All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.9.0.tar.gz
-$ tar xf 0.9.0.tar.gz
-$ PATH=/path/to/conda-stage-0.9.0/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.9.0-9000.tar.gz
+$ tar xf 0.9.0-9000.tar.gz
+$ PATH=/path/to/conda-stage-0.9.0-9000/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.9.0
+0.9.0-9000
 ```
