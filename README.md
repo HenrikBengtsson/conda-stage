@@ -24,9 +24,17 @@ This will create shell _function_ `conda-stage()`.
 To _configure_ existing Conda environment 'myenv' so that it is automatically staged to local disk when activated, and automatically unstaged when deactivated, do:
 
 ```sh
-$ conda activate myenv
-(myenv) $ conda-stage --auto-stage=enable
-(myenv) $ conda deactivate
+$ conda-stage --auto-stage=enable myenv
+INFO: Configuring automatic staging and unstaging of original Conda environment  ...
+INFO: Package current Conda environment (/home/alice/.conda/envs/myenv) to cache ...
+INFO: [ONCE] Packaging Conda environment, because it hasn't been done before ...
+Collecting packages...
+Packing environment at '/home/alice/.conda/envs/myenv' to '/home/alice/.conda/envs/.tmp.myenv.tar.gz'
+[########################################] | 100% Completed |  8.4s
+INFO: Total 'conda-pack' time: 10 seconds
+INFO: Created conda-pack tarball: /home/alice/.conda/envs/myenv.tar.gz (140098670 bytes; 2025-03-02 18:09:55.975267674 -0800)
+INFO: Enabled auto-staging
+INFO: Enabled auto-unstaging
 $ 
 ```
 
@@ -37,7 +45,7 @@ Now, whenever activating this environment in the future, it will be automaticall
 ```sh
 $ conda activate myenv
 (/tmp/alice/conda-stage-ktdy/myenv) $ command -v python
-/tmp/hb/conda-stage-ktdy/myenv/bin/python
+/tmp/alice/conda-stage-ktdy/myenv/bin/python
 ```
 
 When deactivate, all temporarily files will be removed automatically;
@@ -45,8 +53,8 @@ When deactivate, all temporarily files will be removed automatically;
 ```sh
 (/tmp/alice/conda-stage-ktdy/myenv) $ conda deactivate
 INFO: Unstaging and reverting to original Conda environment  ...
-INFO: Preparing removal of staged files: /tmp/hb/conda-stage-ktdy/myenv
-INFO: Deactivating and removing staged Conda environment: /tmp/hb/conda-stage-ktdy/myenv
+INFO: Preparing removal of staged files: /tmp/alice/conda-stage-ktdy/myenv
+INFO: Deactivating and removing staged Conda environment: /tmp/alice/conda-stage-ktdy/myenv
 INFO: Total unstage time: 0 seconds
 $ 
 ```
@@ -73,14 +81,14 @@ $
 
 We call `conda-stage --pack --force` to make sure the updated are reflected in the cached "tarball" that is used for staging.
 
-It is also necessary if you want to disable auto-staging;
+To disable auto-staging, do:
 
 ```sh
-$ export CONDA_STAGE=false
-$ conda activate myenv
-(myenv) $ conda-stage --auto-stage=disable
-(myenv) $ conda deactivate
-$ unset CONDA_STAGE
+$ conda-stage --auto-stage=disable myenv
+INFO: Configuring automatic staging and unstaging of original Conda environment  ...
+INFO: Removed 'conda-pack' tarball /home/alice/.conda/envs/myjupyter.tar.gz (140098670 bytes; 2025-03-02 18:09:55.975267674 -0800)
+INFO: Disabled auto-staging
+INFO: Disabled auto-unstaging
 ```
 
 
@@ -139,10 +147,10 @@ pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
 
 ```sh
 $ conda-stage --help --full
-conda-stage: Stage Current Conda Environment on Local Disk
+conda-stage: Stage Conda Environment on Local Disk
 
 Usage:
- conda-stage [options]
+ conda-stage [options] [env_name]
 
 Basic options:  
  --help                  Display the full help page with examples
@@ -155,11 +163,11 @@ Output options:
 
 Auto-staging options:
  --auto-stage=<cmd>      'enable' or 'disable' automatic staging when
-                         activating the original Conda environment
+                         activating a Conda environment
  --auto-unstage=<cmd>    'enable' or 'disable' automatic unstaging when
                          deactivating the staged Conda environment
  --prologue=<commands>   Optional commands to call during autostaging
-                         before 'conda-stage' is called the first time.
+                         before 'conda-stage' is called the first time
 
 Manual-staging options:
  --stage                 Stage a Conda environment
@@ -177,6 +185,10 @@ Other options:
  --force                 Force an action, e.g. repacking environment
  --source                Output conda-stage() shell function
 
+Arguments:
+ env_name                An optional environment name
+                         (Default: the current activated environment)
+
 Examples:
 
  conda-stage --help --full
@@ -184,20 +196,17 @@ Examples:
  conda-stage --version --full
 
  ## Enable auto-staging
- conda activate myenv
- conda-stage --auto-stage=enable
- conda deactivate
+ conda-stage --auto-stage=enable myenv
 
  ## Disable auto-staging
- CONDA_STAGE=false conda activate myenv
- conda-stage --auto-stage=disable
- conda deactivate
+ conda-stage --auto-stage=disable myenv
 
  ## Auto-stage when 'conda-stage' module needs to be "loaded" first
- conda-stage --prologue="module load conda-stage" --auto-stage=enable
- ## Set a default --prologue command
+ conda-stage --prologue="module load conda-stage" --auto-stage=enable myenv
+
+ ## Alternatively, set a default --prologue command
  export CONDA_STAGE_PROLOGUE="module load conda-stage"
- conda-stage --auto-stage=enable
+ conda-stage --auto-stage=enable myenv
 
  ## Repack environment after updating or install new software
  conda-stage --pack --force
@@ -230,7 +239,7 @@ Requirements:
  * conda-pack (automatically installed into Conda environment, if missing)
  * conda
 
-Version: 0.8.0
+Version: 0.8.0-9000
 Copyright: Henrik Bengtsson (2022-2025)
 License: ISC
 Webpage: https://github.com/HenrikBengtsson/conda-stage/
@@ -261,10 +270,10 @@ All heavy lifting is done by [**conda-pack**](https://conda.github.io/conda-pack
 
 ```sh
 $ cd /path/to/software
-$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.8.0.tar.gz
-$ tar xf 0.8.0.tar.gz
-$ PATH=/path/to/conda-stage-0.8.0/bin:$PATH
+$ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/0.8.0-9000.tar.gz
+$ tar xf 0.8.0-9000.tar.gz
+$ PATH=/path/to/conda-stage-0.8.0-9000/bin:$PATH
 $ export PATH
 $ conda-stage --version
-0.8.0
+0.8.0-9000
 ```
