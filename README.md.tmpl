@@ -24,7 +24,7 @@ This will create shell _function_ `conda-stage()`.
 To _configure_ existing Conda environment 'myenv' so that it is automatically staged to local disk when activated, and automatically unstaged when deactivated, do:
 
 ```sh
-$ conda-stage --auto-stage=enable myenv
+$ conda stage --auto-stage=enable myenv
 INFO: Configuring automatic staging and unstaging of original Conda environment  ...
 INFO: Package current Conda environment (/home/alice/.conda/envs/myenv) to cache ...
 INFO: [ONCE] Packaging Conda environment, because it hasn't been done before ...
@@ -76,34 +76,35 @@ $ conda activate myenv
 (myenv) $ 
 ```
 
-This can be useful when you want to update the Conda environment, or install additional software, because that cannot be done to staged environment;
+This can also be used for updating an auto-staged Conda environment, but the easiest is to disable auto-staging first:
 
 ```sh
-$ export CONDA_STAGE=false
-$ conda activate myenv
-(myenv) $ conda update --all
-(myenv) $ conda-stage --pack --force
-(myenv) $ conda deactivate
-$ unset CONDA_STAGE
-$
-```
-
-We call `conda-stage --pack --force` to make sure the updated are reflected in the cached "tarball" that is used for staging.
-
-To disable auto-staging, do:
-
-```sh
-$ conda-stage --auto-stage=disable myenv
+$ conda stage --auto-stage=disable myenv
 INFO: Configuring automatic staging and unstaging of original Conda environment  ...
 INFO: Removed 'conda-pack' tarball /home/alice/.conda/envs/myenv.tar.gz (140098670 bytes; 2025-03-02 18:09:55.975267674 -0800)
 INFO: Disabled auto-staging
 INFO: Disabled auto-unstaging
 ```
 
+then update the environment as usual:
+
+```sh
+$ conda activate myenv
+(myenv) $ conda update --all
+(myenv) $ conda deactivate
+$
+```
+
+and finally re-enable auto-staging:
+
+```sh
+$ conda stage --auto-stage=enable myenv
+```
+
 
 ### Example: Manual staging and unstaging of environments
 
-To stage conda environment 'myenv' to local disk and activate there, do:
+To stage conda environment 'myenv' manually, we cannot use `conda stage`, but `conda-stage` as in:
 
 ```sh
 $ conda activate myenv
@@ -155,7 +156,7 @@ pushenv("CONDA_STAGE_PROLOGUE","module load conda-stage")
 ## Command-line help
 
 ```sh
-$ conda-stage --help --full
+$ conda stage --help --full
 {{ HELP }}
 ```
 
@@ -188,6 +189,6 @@ $ curl -L -O https://github.com/HenrikBengtsson/conda-stage/archive/refs/tags/{{
 $ tar xf {{ VERSION }}.tar.gz
 $ PATH=/path/to/conda-stage-{{ VERSION }}/bin:$PATH
 $ export PATH
-$ conda-stage --version
+$ conda stage --version
 {{ VERSION }}
 ```
