@@ -91,7 +91,7 @@
 #"  * conda-pack (automatically installed into Conda environment, if missing)
 #"  * conda
 #"
-#' Version: 0.8.0-9000
+#' Version: 0.9.0
 #" Copyright: Henrik Bengtsson (2022-2025)
 #" License: ISC
 #' Webpage: https://github.com/HenrikBengtsson/conda-stage/

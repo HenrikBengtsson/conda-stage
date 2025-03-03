@@ -1,4 +1,4 @@
-# Version 0.8.0-9000 [2025-03-02]
+# Version 0.9.0 [2025-03-02]
 
 ## New Features
 
