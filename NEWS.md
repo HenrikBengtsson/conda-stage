@@ -1,16 +1,20 @@
 # Version 0.8.0-9000 [2025-03-02]
 
-* ...
+## New Features
+
+* Add support for `conda-stage --auto-stage=enable <env_name>` and
+  `conda-stage --auto-stage=disable <env_name>`. Previously, one had
+  to manually activate the environment prior to using `conda-stage`.
 
 
 # Version 0.8.0 [2025-03-02]
 
 ## New Features
 
-* `conda-state --version --full` reports also on the `conda-pack`
+* `conda-stage --version --full` reports also on the `conda-pack`
   version.
 
-* `conda-state --help --full` gives more details help.
+* `conda-stage --help --full` gives more details help.
 
 * Add `conda-stage --assert=staged` to assert that there is an active
   Conda environment and it has been staged. Analogously, `conda-stage
