@@ -6,6 +6,10 @@
   `conda-stage --auto-stage=disable <env_name>`. Previously, one had
   to manually activate the environment prior to using `conda-stage`.
 
+* The Conda environment will now be packaged immediately by
+  `conda-stage --auto-stage=enable`. Previously it was done only when
+  the environment was activated for the first time.
+  
 
 # Version 0.8.0 [2025-03-02]
 
