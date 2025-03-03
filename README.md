@@ -44,6 +44,15 @@ Now, whenever activating this environment in the future, it will be automaticall
 
 ```sh
 $ conda activate myenv
+INFO: Staging current Conda environment (/home/alice/.conda/envs/myenv) to local disk ...
+INFO: Extracting /home/alice/.conda/envs/myenv.tar.gz (140098719 bytes; 2025-03-02 18:18:24.957895743 -0800) to /tmp/alice/conda-stage-ktdy/myenv
+INFO: Total extract time: 2 seconds
+INFO: Disable any /tmp/alice/conda-stage-yOri/myenv/etc/conda/activate.d/*.conda-stage-auto.sh scripts
+INFO: Activating staged environment
+INFO: Unpacking (relocating)
+INFO: Total 'conda-unpack' time: 0 seconds
+INFO: Making staged environment read-only (use --writable to disable)
+INFO: Activating staged Conda environment: /tmp/alice/conda-stage-ktdy/myenv
 (/tmp/alice/conda-stage-ktdy/myenv) $ command -v python
 /tmp/alice/conda-stage-ktdy/myenv/bin/python
 ```
@@ -86,7 +95,7 @@ To disable auto-staging, do:
 ```sh
 $ conda-stage --auto-stage=disable myenv
 INFO: Configuring automatic staging and unstaging of original Conda environment  ...
-INFO: Removed 'conda-pack' tarball /home/alice/.conda/envs/myjupyter.tar.gz (140098670 bytes; 2025-03-02 18:09:55.975267674 -0800)
+INFO: Removed 'conda-pack' tarball /home/alice/.conda/envs/myenv.tar.gz (140098670 bytes; 2025-03-02 18:09:55.975267674 -0800)
 INFO: Disabled auto-staging
 INFO: Disabled auto-unstaging
 ```
