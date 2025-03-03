@@ -511,6 +511,10 @@ fi
 
 ## Validate environment, if specified
 if [[ -n ${envname} ]]; then
+    if ! command -v conda &> /dev/null; then
+        merror "Command not found: 'conda'"
+    fi
+    
     ## Assert that the environment exists
     if ! conda env list | grep -q -E "^${envname}\b"; then
         merror "Conda environment not found: '${envname}'"
